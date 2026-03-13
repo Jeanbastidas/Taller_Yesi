@@ -81,6 +81,7 @@ type IntentType =
   | "guide"
   | "tips"
   | "howto"
+  | "general"
   | "fallback";
 
 interface Intent {
@@ -694,6 +695,27 @@ function detectIntent(q: string, labCtx: LabContext): Intent {
   if (cfg.keywords.howto.some((k) => low.includes(k)))
     return { type: "howto", rawQuestion: q };
 
+  // General questions about fluid dynamics or the page
+  const generalKeywords = [
+    "fluidos",
+    "dinámica",
+    "mecánica",
+    "página",
+    "sitio",
+    "laboratorio",
+    "experimento",
+    "teoría",
+    "física",
+    "ingeniería",
+    "quién",
+    "qué es",
+    "cómo funciona",
+    "ayuda",
+    "información",
+  ];
+  if (generalKeywords.some((k) => low.includes(k)))
+    return { type: "general", rawQuestion: q };
+
   return { type: "fallback", rawQuestion: q };
 }
 
@@ -987,6 +1009,30 @@ function answerQuestionV2(
       : null;
   const tauCouette =
     shear != null && input.mu != null ? input.mu * shear : null;
+
+  // Handle general questions about fluid dynamics or the page
+  if (intentType === "general") {
+    const t = low;
+    if (t.includes("quién") || t.includes("autor") || t.includes("creador")) {
+      return "Esta página fue creada por estudiantes de ingeniería para aprender sobre dinámica de fluidos viscosos. Incluye laboratorios virtuales interactivos para experimentos de Poiseuille, Stokes y Couette.";
+    }
+    if (t.includes("qué es") || t.includes("fluidos")) {
+      return "La dinámica de fluidos es el estudio del movimiento de fluidos y las fuerzas que actúan sobre ellos. Esta página se enfoca en fluidos viscosos y sedimentación de partículas.";
+    }
+    if (t.includes("página") || t.includes("sitio")) {
+      return "Este es un laboratorio virtual educativo con simulaciones interactivas de tres experimentos clásicos: flujo en tubos (Poiseuille), sedimentación (Stokes) y flujo entre placas (Couette). Incluye teoría, ejercicios resueltos y un asistente IA.";
+    }
+    if (t.includes("laboratorio") || t.includes("experimento")) {
+      return "Hay tres laboratorios: 1) Poiseuille: flujo laminar en tubos. 2) Stokes: sedimentación de partículas. 3) Couette: flujo entre placas paralelas. Cada uno tiene controles interactivos y análisis en tiempo real.";
+    }
+    if (t.includes("teoría")) {
+      return "La sección de teoría explica los principios físicos de cada experimento, incluyendo ecuaciones, diagramas interactivos y conceptos clave de mecánica de fluidos.";
+    }
+    if (t.includes("ayuda") || t.includes("cómo")) {
+      return "Usa los controles deslizantes en cada laboratorio para cambiar parámetros y observa cómo afectan los resultados. El asistente IA puede responder preguntas específicas sobre cálculos y conceptos.";
+    }
+    return "Esta es una herramienta educativa para aprender dinámica de fluidos. Explora los laboratorios virtuales, lee la teoría o pregunta al asistente sobre cualquier concepto relacionado con fluidos viscosos.";
+  }
 
   // If intent is unclear, infer from tokens.
   if (intentType === "fallback") {
@@ -1593,7 +1639,23 @@ function ChatWindow({ chat, isTyping }: ChatWindowProps) {
             role="status"
             aria-label={strings.typing}
           >
-            <Loader2 size={12} className="animate-spin" aria-hidden="true" />
+            <div className="flex items-center gap-1">
+              <motion.div
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                className="w-1.5 h-1.5 bg-brand-accent rounded-full"
+              />
+              <motion.div
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                className="w-1.5 h-1.5 bg-brand-accent rounded-full"
+              />
+              <motion.div
+                animate={{ y: [0, -4, 0] }}
+                transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                className="w-1.5 h-1.5 bg-brand-accent rounded-full"
+              />
+            </div>
             <span className="text-[10px] font-black uppercase tracking-widest">
               {strings.typing}
             </span>
@@ -1886,12 +1948,14 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
             {/* Header */}
             <div className="p-5 border-b border-brand-border flex items-start justify-between gap-4 assistant-header">
               <div className="flex items-start gap-3">
-                <div
-                  className="w-9 h-9 rounded-2xl bg-brand-accent/20 flex items-center justify-center text-brand-accent assistant-avatar"
+                <motion.div
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-9 h-9 rounded-2xl bg-gradient-to-br from-brand-accent to-brand-secondary flex items-center justify-center text-white shadow-lg assistant-avatar"
                   aria-hidden="true"
                 >
                   <MessageCircle size={16} />
-                </div>
+                </motion.div>
                 <div className="space-y-1">
                   <p className="text-[9px] text-[var(--color-text-muted)] uppercase font-bold tracking-widest">
                     {strings.title}

@@ -9,7 +9,7 @@ import {
   ArrowUp,
 } from "lucide-react";
 import { motion } from "motion/react";
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { UnitContext } from "../context/UnitContext";
 import { getUnits } from "../utils/units";
 
@@ -74,6 +74,7 @@ const FigCaption = ({
 export const TheorySection = () => {
   const { unitSystem } = useContext(UnitContext);
   const units = useMemo(() => getUnits(unitSystem), [unitSystem]);
+  const [hoveredForce, setHoveredForce] = useState<string | null>(null);
 
   return (
     <section id="theory" className="space-y-32 py-32">
@@ -812,7 +813,7 @@ export const TheorySection = () => {
               </h3>
 
               <div className="flex flex-col items-center gap-10">
-                <div className="relative w-64 h-80 bg-slate-50 rounded-3xl border border-slate-200 flex items-center justify-center overflow-hidden shadow-inner">
+                <div className="relative w-64 h-80 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-inner">
                   <div className="absolute inset-0 opacity-10">
                     {[...Array(8)].map((_, i) => (
                       <motion.div
@@ -835,8 +836,11 @@ export const TheorySection = () => {
                       <motion.div
                         animate={{ y: [0, -4, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
+                        onMouseEnter={() => setHoveredForce('Fb')}
+                        onMouseLeave={() => setHoveredForce(null)}
+                        whileHover={{ scale: 1.05 }}
                       >
-                        <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full border border-brand-secondary/30 shadow-sm">
+                        <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm px-3 py-1 rounded-full border border-brand-secondary/30 shadow-sm">
                           <ArrowUp className="text-brand-secondary" size={18} />
                           <span className="text-[10px] font-bold text-brand-secondary">
                             Fb (Empuje)
@@ -846,8 +850,11 @@ export const TheorySection = () => {
                       <motion.div
                         animate={{ y: [0, -6, 0] }}
                         transition={{ duration: 2.3, repeat: Infinity }}
+                        onMouseEnter={() => setHoveredForce('Fd')}
+                        onMouseLeave={() => setHoveredForce(null)}
+                        whileHover={{ scale: 1.05 }}
                       >
-                        <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full border border-amber-500/30 shadow-sm">
+                        <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm px-3 py-1 rounded-full border border-amber-500/30 shadow-sm">
                           <ArrowUp className="text-amber-500" size={24} />
                           <span className="text-[10px] font-bold text-amber-500">
                             Fd (Arrastre)
@@ -860,9 +867,12 @@ export const TheorySection = () => {
                     <motion.div
                       animate={{ y: [0, 2, 0] }}
                       transition={{ duration: 2, repeat: Infinity }}
-                      className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 border-2 border-white shadow-xl flex items-center justify-center"
+                      className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 dark:from-slate-600 dark:to-slate-800 border-2 border-white dark:border-slate-300 shadow-xl flex items-center justify-center"
+                      onMouseEnter={() => setHoveredForce('particle')}
+                      onMouseLeave={() => setHoveredForce(null)}
+                      whileHover={{ scale: 1.05 }}
                     >
-                      <div className="w-3 h-3 rounded-full bg-white/40" />
+                      <div className="w-3 h-3 rounded-full bg-white/40 dark:bg-slate-400/40" />
                     </motion.div>
 
                     {/* Weight down */}
@@ -870,8 +880,11 @@ export const TheorySection = () => {
                       <motion.div
                         animate={{ y: [0, 5, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
+                        onMouseEnter={() => setHoveredForce('Fg')}
+                        onMouseLeave={() => setHoveredForce(null)}
+                        whileHover={{ scale: 1.05 }}
                       >
-                        <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full border border-rose-500/30 shadow-sm">
+                        <div className="flex items-center gap-1.5 bg-white/90 dark:bg-slate-700/90 backdrop-blur-sm px-3 py-1 rounded-full border border-rose-500/30 shadow-sm">
                           <ArrowDown className="text-rose-500" size={36} />
                           <span className="text-[10px] font-bold text-rose-500">
                             Fg (Peso)
@@ -904,6 +917,53 @@ export const TheorySection = () => {
                     <InlineMath math="\frac{4}{3}\pi r^3 \rho_p g = \frac{4}{3}\pi r^3 \rho_f g + 6\pi\mu r v_t" />
                   </p>
                 </div>
+
+                {/* Tooltip */}
+                {hoveredForce && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="w-full glass-card p-4 rounded-2xl text-center"
+                  >
+                    {hoveredForce === 'Fg' && (
+                      <div>
+                        <p className="text-sm font-bold text-rose-500">Fuerza de Gravedad (Fg)</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          <InlineMath math="F_g = m g = \frac{4}{3} \pi r^3 \rho_p g" />
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">Actúa hacia abajo debido al peso de la partícula.</p>
+                      </div>
+                    )}
+                    {hoveredForce === 'Fb' && (
+                      <div>
+                        <p className="text-sm font-bold text-brand-secondary">Fuerza de Empuje (Fb)</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          <InlineMath math="F_b = m_f g = \frac{4}{3} \pi r^3 \rho_f g" />
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">Principio de Arquímedes: empuje hacia arriba del fluido.</p>
+                      </div>
+                    )}
+                    {hoveredForce === 'Fd' && (
+                      <div>
+                        <p className="text-sm font-bold text-amber-500">Fuerza de Arrastre (Fd)</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          <InlineMath math="F_d = 6 \pi \mu r v" />
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">Ley de Stokes: resistencia viscosa del fluido.</p>
+                      </div>
+                    )}
+                    {hoveredForce === 'particle' && (
+                      <div>
+                        <p className="text-sm font-bold text-slate-600">Partícula Esférica</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Radio r, densidad ρ_p, masa m = (4/3)πr³ρ_p
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">En sedimentación libre, alcanza velocidad terminal Vt.</p>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
               </div>
             </div>
             <FigCaption
