@@ -1,0 +1,598 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+@theme {
+    --font-sans: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+    --color-brand-bg: #0b1020;
+    --color-brand-card: #111a2b;
+    --color-brand-accent: #2dd4bf;
+    --color-brand-secondary: #60a5fa;
+    --color-brand-border: rgba(148, 163, 184, 0.18);
+    --color-text: #f8fafc;
+    --color-text-soft: #d3d9e4;
+    --color-text-muted: #9aa7bd;
+    --color-surface-1: #0f172a;
+    --color-surface-2: #111827;
+    --glass-bg: rgba(17, 26, 43, 0.72);
+    --grid-op: 0.035;
+    --overlay-bg: rgba(3, 7, 18, 0.45);
+    --color-shadow: rgba(2, 6, 23, 0.55);
+}
+
+[data-theme="light"] {
+    --color-brand-bg: #f6f7fb;
+    --color-brand-card: #ffffff;
+    --color-brand-accent: #0f766e;
+    --color-brand-secondary: #2563eb;
+    --color-brand-border: #e5e7eb;
+    --color-text: #0f172a;
+    --color-text-soft: #334155;
+    --color-text-muted: #5b6b7c;
+    --color-surface-1: #ffffff;
+    --color-surface-2: #f1f5f9;
+    --glass-bg: rgba(255, 255, 255, 0.72);
+    --grid-op: 0.045;
+    --overlay-bg: rgba(15, 23, 42, 0.06);
+    --color-shadow: rgba(15, 23, 42, 0.08);
+}
+
+html {
+    scroll-behavior: smooth;
+    background-color: var(--color-brand-bg);
+    color: var(--color-text);
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+body {
+    overflow-x: hidden;
+    background-color: var(--color-brand-bg);
+    color: var(--color-text);
+}
+
+.app-shell {
+    background:
+        radial-gradient(
+            1200px 800px at -10% -20%,
+            color-mix(in srgb, var(--color-brand-secondary) 18%, transparent),
+            transparent 60%
+        ),
+        radial-gradient(
+            900px 700px at 110% 10%,
+            color-mix(in srgb, var(--color-brand-accent) 20%, transparent),
+            transparent 55%
+        ),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--color-brand-bg) 92%, #000 8%) 0%,
+            var(--color-brand-bg) 65%,
+            var(--color-brand-bg) 100%
+        );
+}
+
+[data-theme="light"] .app-shell {
+    background:
+        radial-gradient(
+            900px 600px at -10% -20%,
+            color-mix(in srgb, var(--color-brand-secondary) 16%, transparent),
+            transparent 60%
+        ),
+        radial-gradient(
+            900px 600px at 110% 10%,
+            color-mix(in srgb, var(--color-brand-accent) 18%, transparent),
+            transparent 60%
+        ),
+        linear-gradient(
+            180deg,
+            #ffffff 0%,
+            var(--color-brand-bg) 55%,
+            var(--color-brand-bg) 100%
+        );
+}
+
+:focus-visible {
+    outline: 2px solid
+        color-mix(in srgb, var(--color-brand-accent) 70%, transparent);
+    outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+/* Grid background effect */
+.bg-grid {
+    background-image:
+        linear-gradient(
+            to right,
+            color-mix(in srgb, var(--color-text) 10%, transparent) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            color-mix(in srgb, var(--color-text) 10%, transparent) 1px,
+            transparent 1px
+        );
+    background-size: 40px 40px;
+}
+
+[data-theme="dark"] .bg-grid {
+    background-image:
+        linear-gradient(
+            to right,
+            color-mix(in srgb, #fff 10%, transparent) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            color-mix(in srgb, #fff 10%, transparent) 1px,
+            transparent 1px
+        );
+}
+
+.bg-grid-small {
+    background-image:
+        linear-gradient(
+            to right,
+            color-mix(in srgb, var(--color-text) 12%, transparent) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            color-mix(in srgb, var(--color-text) 12%, transparent) 1px,
+            transparent 1px
+        );
+    background-size: 22px 22px;
+}
+
+[data-theme="dark"] .bg-grid-small {
+    background-image:
+        linear-gradient(
+            to right,
+            color-mix(in srgb, #fff 12%, transparent) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            color-mix(in srgb, #fff 12%, transparent) 1px,
+            transparent 1px
+        );
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--color-brand-border);
+    box-shadow:
+        0 6px 24px var(--color-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition:
+        background 0.3s ease,
+        border 0.3s ease;
+}
+
+[data-theme="light"] .glass-card {
+    box-shadow:
+        0 10px 26px var(--color-shadow),
+        inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Theme compatibility layer:
+   A lot of the UI uses Tailwind slate/white helpers; these overrides keep both modes readable. */
+[data-theme="light"] .text-slate-200,
+[data-theme="light"] .text-slate-300 {
+    color: var(--color-text) !important;
+}
+[data-theme="light"] .text-slate-400 {
+    color: var(--color-text-soft) !important;
+}
+[data-theme="light"] .text-slate-500,
+[data-theme="light"] .text-slate-600 {
+    color: var(--color-text-muted) !important;
+}
+
+[data-theme="dark"] .text-slate-900 {
+    color: var(--color-text) !important;
+}
+
+[data-theme="dark"] .bg-white\\/90,
+[data-theme="dark"] .bg-white\\/80 {
+    background-color: rgba(15, 23, 42, 0.82) !important;
+}
+
+[data-theme="dark"] .border-slate-200 {
+    border-color: var(--color-brand-border) !important;
+}
+
+[data-theme="light"] .border-slate-200 {
+    border-color: var(--color-brand-border) !important;
+}
+
+[data-theme="light"] .bg-slate-50 {
+    background-color: rgba(15, 23, 42, 0.03) !important;
+}
+[data-theme="light"] .bg-slate-100 {
+    background-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+[data-theme="light"] .bg-black\\/10,
+[data-theme="light"] .bg-black\\/20,
+[data-theme="light"] .bg-black\\/30,
+[data-theme="light"] .bg-black\\/40 {
+    background-color: var(--overlay-bg) !important;
+}
+
+[data-theme="light"] .bg-white\\/5 {
+    background-color: rgba(15, 23, 42, 0.035) !important;
+}
+[data-theme="light"] .bg-white\\/10 {
+    background-color: rgba(15, 23, 42, 0.06) !important;
+}
+[data-theme="light"] .bg-white\\/20 {
+    background-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+[data-theme="light"] .bg-brand-accent\\/10 {
+    background-color: color-mix(
+        in srgb,
+        var(--color-brand-accent) 18%,
+        transparent
+    ) !important;
+}
+[data-theme="light"] .bg-brand-secondary\\/10 {
+    background-color: color-mix(
+        in srgb,
+        var(--color-brand-secondary) 18%,
+        transparent
+    ) !important;
+}
+[data-theme="light"] .border-brand-accent\\/20 {
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-accent) 45%,
+        transparent
+    ) !important;
+}
+[data-theme="light"] .border-brand-secondary\\/20 {
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-secondary) 45%,
+        transparent
+    ) !important;
+}
+
+.btn-secondary {
+    background: color-mix(
+        in srgb,
+        var(--color-brand-bg) 70%,
+        var(--color-brand-card)
+    );
+    border: 1px solid
+        color-mix(in srgb, var(--color-brand-border) 70%, transparent);
+}
+
+[data-theme="light"] .btn-secondary {
+    background: color-mix(in srgb, var(--color-brand-secondary) 12%, #fff 88%);
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-secondary) 35%,
+        transparent
+    );
+    color: #0f172a;
+}
+
+.nav-shell {
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-brand-bg) 92%, transparent),
+        color-mix(in srgb, var(--color-brand-bg) 70%, transparent)
+    );
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--color-brand-border) 70%, transparent);
+}
+
+[data-theme="light"] .nav-shell {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.9),
+        rgba(255, 255, 255, 0.75)
+    );
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+/* Assistant UI */
+.assistant-shell {
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(in srgb, var(--color-brand-accent) 14%, transparent),
+            transparent 42%
+        ),
+        linear-gradient(
+            0deg,
+            color-mix(in srgb, var(--color-brand-card) 86%, transparent),
+            transparent 65%
+        );
+    border: 1px solid
+        color-mix(in srgb, var(--color-brand-border) 70%, transparent);
+}
+
+[data-theme="light"] .assistant-shell {
+    background:
+        linear-gradient(
+            145deg,
+            color-mix(in srgb, var(--color-brand-secondary) 10%, transparent),
+            transparent 42%
+        ),
+        linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.95),
+            rgba(255, 255, 255, 0.88)
+        );
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.assistant-header {
+    background: linear-gradient(
+        120deg,
+        color-mix(in srgb, var(--color-brand-accent) 16%, transparent),
+        transparent 58%
+    );
+}
+
+[data-theme="light"] .assistant-header {
+    background: linear-gradient(
+        120deg,
+        color-mix(in srgb, var(--color-brand-secondary) 14%, transparent),
+        transparent 52%
+    );
+}
+
+.assistant-avatar {
+    box-shadow:
+        0 0 14px color-mix(in srgb, var(--color-brand-accent) 28%, transparent),
+        inset 0 0 0 1px
+            color-mix(in srgb, var(--color-brand-accent) 30%, transparent);
+}
+
+.assistant-chip {
+    background: color-mix(in srgb, var(--color-brand-card) 88%, transparent);
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-border) 80%,
+        transparent
+    );
+}
+
+.assistant-tab {
+    letter-spacing: 0.22em;
+}
+
+.assistant-tab-active {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-brand-accent) 85%, #fff 15%),
+        color-mix(in srgb, var(--color-brand-secondary) 75%, #fff 25%)
+    );
+    color: #061018;
+    border-color: transparent;
+}
+
+.assistant-tab-idle {
+    background: color-mix(in srgb, var(--color-brand-card) 80%, transparent);
+    color: var(--color-text-muted);
+}
+
+[data-theme="light"] .assistant-tab-idle {
+    background: rgba(255, 255, 255, 0.85);
+    color: #3f4a58;
+}
+
+.assistant-panel {
+    background: color-mix(in srgb, var(--color-brand-card) 86%, transparent);
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-border) 85%,
+        transparent
+    );
+}
+
+.assistant-bubble {
+    max-width: 90%;
+    box-shadow:
+        0 10px 20px rgba(2, 6, 23, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.assistant-bubble-user {
+    background: color-mix(
+        in srgb,
+        var(--color-brand-secondary) 18%,
+        transparent
+    );
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-secondary) 42%,
+        transparent
+    );
+}
+
+.assistant-bubble-ai {
+    background: color-mix(in srgb, var(--color-brand-card) 78%, transparent);
+    border-color: var(--color-brand-border);
+}
+
+[data-theme="light"] .assistant-bubble {
+    box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .assistant-bubble-user {
+    background: color-mix(in srgb, var(--color-brand-secondary) 16%, #fff 84%);
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-secondary) 45%,
+        transparent
+    );
+}
+
+[data-theme="light"] .assistant-bubble-ai {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: rgba(15, 23, 42, 0.08);
+}
+
+.assistant-input {
+    background: color-mix(in srgb, var(--color-brand-card) 86%, transparent);
+}
+
+[data-theme="light"] .assistant-input {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.assistant-send {
+    background-image: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-brand-accent) 88%, #fff 12%),
+        color-mix(in srgb, var(--color-brand-secondary) 80%, #fff 20%)
+    );
+}
+
+.assistant-ghost {
+    background: color-mix(in srgb, var(--color-brand-card) 82%, transparent);
+}
+
+[data-theme="light"] .assistant-ghost {
+    background: rgba(255, 255, 255, 0.88);
+}
+
+.assistant-prompt {
+    background: color-mix(in srgb, var(--color-brand-card) 86%, transparent);
+}
+
+[data-theme="light"] .assistant-prompt {
+    background: rgba(255, 255, 255, 0.88);
+    border-color: rgba(15, 23, 42, 0.1);
+}
+
+/* Assistant warning visibility in light mode */
+[data-theme="light"] .assistant-shell .bg-amber-500\\/10 {
+    background-color: rgba(245, 158, 11, 0.22) !important;
+}
+[data-theme="light"] .assistant-shell .border-amber-500\\/20 {
+    border-color: rgba(245, 158, 11, 0.45) !important;
+}
+[data-theme="light"] .assistant-shell .text-amber-400 {
+    color: #b45309 !important;
+}
+
+.assistant-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(
+            in srgb,
+            var(--color-brand-accent) 40%,
+            transparent
+        )
+        transparent;
+}
+
+.assistant-fab {
+    background-image: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-brand-accent) 90%, #fff 10%),
+        color-mix(in srgb, var(--color-brand-secondary) 82%, #fff 18%)
+    );
+}
+
+.assistant-fab-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 20px;
+    border: 1px solid
+        color-mix(in srgb, var(--color-brand-accent) 28%, transparent);
+    opacity: 0.7;
+}
+
+[data-theme="light"] .assistant-fab-ring {
+    border-color: color-mix(
+        in srgb,
+        var(--color-brand-secondary) 40%,
+        transparent
+    );
+}
+
+.neon-glow {
+    box-shadow: 0 0 24px
+        color-mix(in srgb, var(--color-brand-accent) 35%, transparent);
+}
+
+[data-theme="light"] .neon-glow {
+    box-shadow: 0 0 18px
+        color-mix(in srgb, var(--color-brand-accent) 25%, transparent);
+}
+
+.cta-primary {
+    background-image: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-brand-accent) 90%, #fff 10%),
+        color-mix(in srgb, var(--color-brand-secondary) 85%, #fff 15%)
+    );
+    color: #071214;
+}
+
+[data-theme="light"] .cta-primary {
+    background-image: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-brand-accent) 92%, #fff 8%),
+        color-mix(in srgb, var(--color-brand-secondary) 88%, #fff 12%)
+    );
+    color: #ffffff;
+}
+
+.scroll-indicator {
+    border-color: color-mix(in srgb, var(--color-text) 25%, transparent);
+}
+
+[data-theme="light"] .scroll-indicator {
+    border-color: color-mix(in srgb, #0f172a 25%, transparent);
+}
+
+[data-theme="light"] .scroll-indicator-dot {
+    background-color: var(--color-brand-secondary);
+    box-shadow: 0 0 12px
+        color-mix(in srgb, var(--color-brand-secondary) 55%, transparent);
+}
+
+.katex-display {
+    margin: 1.5em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    color: var(--color-brand-accent);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--color-brand-bg);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-brand-border);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-brand-accent);
+}

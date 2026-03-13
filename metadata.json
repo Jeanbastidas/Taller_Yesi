@@ -1,0 +1,5 @@
+{
+  "name": "FluidLab: Dinámica de Fluidos Viscosos",
+  "description": "Plataforma educativa interactiva sobre viscosidad, flujo de Couette, Poiseuille y Ley de Stokes con simulaciones en tiempo real.",
+  "requestFramePermissions": []
+}
