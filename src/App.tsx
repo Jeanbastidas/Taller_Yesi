@@ -93,17 +93,17 @@ export default function App() {
 
       {/* Navigation */}
       <nav className="fixed top-0 z-50 w-full glass-card border-none bg-brand-bg/40 backdrop-blur-xl border-b border-white/5 nav-shell">
-        <div className="max-w-screen-2xl mx-auto px-6 lg:px-12 h-20 flex items-center justify-between">
+        <div className="max-w-screen-2xl mx-auto px-6 lg:px-12 h-16 lg:h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-brand-accent/20 flex items-center justify-center text-brand-accent border border-brand-accent/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-              <Activity size={24} />
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-brand-accent/20 flex items-center justify-center text-brand-accent border border-brand-accent/30 shadow-[0_0_20px_rgba(16,185,129,0.1)]">
+              <Activity size={20} />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold tracking-tighter text-xl leading-none text-[var(--color-text)]">
+              <span className="font-bold tracking-tighter text-lg lg:text-xl leading-none text-[var(--color-text)]">
                 FLUID<span className="text-brand-accent">LAB</span>
               </span>
-              <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest font-bold">
-                v3.0 Technical Suite
+              <span className="text-[9px] lg:text-[10px] text-slate-500 font-mono uppercase tracking-widest font-bold">
+                by: JeanCol
               </span>
             </div>
           </div>
