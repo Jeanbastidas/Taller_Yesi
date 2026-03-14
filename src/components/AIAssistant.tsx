@@ -21,6 +21,9 @@ import {
   ArrowDown,
   Minus,
   Loader2,
+  Copy,
+  Check,
+  RefreshCw,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { GoogleGenAI } from "@google/genai";
@@ -28,6 +31,81 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { UnitContext, type UnitSystem } from "../context/UnitContext";
 import { getUnits } from "../utils/units";
+
+// ─────────────────────────────────────────────
+// DIAGRAMS
+// ─────────────────────────────────────────────
+
+const NewtonViscosityDiagram = () => (
+  <svg width="100%" viewBox="0 0 680 380" xmlns="http://www.w3.org/2000/svg" className="rounded-xl bg-black/20 p-2 border border-brand-border/30 my-2">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </marker>
+      <marker id="arr-tau" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="#BA7517" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      </marker>
+    </defs>
+
+    {/* Zona del fluido */}
+    <rect x="160" y="72" width="280" height="220" rx="0" fill="var(--color-brand-card)" opacity="0.6"/>
+
+    {/* Líneas de capa */}
+    <line x1="160" y1="127" x2="440" y2="127" stroke="var(--color-brand-border)" strokeWidth="0.8" strokeDasharray="4 5"/>
+    <line x1="160" y1="182" x2="440" y2="182" stroke="var(--color-brand-border)" strokeWidth="0.8" strokeDasharray="4 5"/>
+    <line x1="160" y1="237" x2="440" y2="237" stroke="var(--color-brand-border)" strokeWidth="0.8" strokeDasharray="4 5"/>
+
+    {/* Placa fija (inferior) */}
+    <rect x="148" y="292" width="304" height="18" rx="4" fill="var(--color-brand-card)" stroke="var(--color-brand-border)" strokeWidth="1"/>
+    {[164,192,220,248,276,304,332,360,388,432].map((x, i) => (
+      <line key={i} x1={x} y1="310" x2={x - 8} y2="320" stroke="var(--color-brand-border)" strokeWidth="1.2"/>
+    ))}
+    <text x="490" y="306" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)">u = 0</text>
+
+    {/* Placa móvil (superior) */}
+    <rect x="148" y="54" width="304" height="18" rx="4" fill="var(--color-brand-card)" stroke="var(--color-brand-border)" strokeWidth="1"/>
+    <text x="490" y="68" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)">u = U</text>
+
+    {/* Flecha τ */}
+    <line x1="290" y1="38" x2="360" y2="38" stroke="#BA7517" strokeWidth="2" markerEnd="url(#arr-tau)"/>
+    <text x="274" y="43" textAnchor="middle" fill="#BA7517" fontSize="14" fontWeight="500" fontFamily="var(--font-sans)">τ</text>
+
+    {/* Perfil lineal (diagonal guía) */}
+    <line x1="160" y1="292" x2="440" y2="72" stroke="var(--color-brand-border)" strokeWidth="1" strokeDasharray="6 4" opacity="0.5"/>
+
+    {/* Vectores de velocidad */}
+    <circle cx="160" cy="292" r="3" fill="var(--color-brand-border)" opacity="0.5"/>
+    <line x1="160" y1="237" x2="216" y2="237" stroke="#185FA5" strokeWidth="1.8" markerEnd="url(#arrow)"/>
+    <line x1="160" y1="182" x2="272" y2="182" stroke="#185FA5" strokeWidth="1.8" markerEnd="url(#arrow)"/>
+    <line x1="160" y1="127" x2="328" y2="127" stroke="#185FA5" strokeWidth="1.8" markerEnd="url(#arrow)"/>
+    <line x1="160" y1="72"  x2="440" y2="72"  stroke="#185FA5" strokeWidth="2.4" markerEnd="url(#arrow)"/>
+    <text x="452" y="77" fill="#185FA5" fontSize="14" fontWeight="500" fontFamily="var(--font-sans)">U</text>
+
+    {/* Cota h */}
+    <line x1="130" y1="72"  x2="130" y2="292" stroke="var(--color-brand-border)" strokeWidth="1"/>
+    <line x1="124" y1="72"  x2="136" y2="72"  stroke="var(--color-brand-border)" strokeWidth="1"/>
+    <line x1="124" y1="292" x2="136" y2="292" stroke="var(--color-brand-border)" strokeWidth="1"/>
+    <text x="112" y="188" textAnchor="middle" fill="var(--color-text-muted)" fontSize="14" fontWeight="500" fontFamily="var(--font-sans)">h</text>
+
+    {/* Eje y etiquetas */}
+    <text x="95" y="300" textAnchor="middle" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)">y = 0</text>
+    <text x="95" y="77"  textAnchor="middle" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)">y = h</text>
+
+    {/* Etiqueta gradiente */}
+    <text x="336" y="168" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)" opacity="0.7">∂u/∂y = U/h</text>
+
+    {/* Fórmula */}
+    <rect x="476" y="130" width="158" height="44" rx="8" fill="var(--color-brand-card)" stroke="var(--color-brand-border)" strokeWidth="1"/>
+    <text x="555" y="149" textAnchor="middle" fill="var(--color-text)" fontSize="14" fontWeight="500" fontFamily="var(--font-sans)">τ = μ · (∂u/∂y)</text>
+    <text x="555" y="166" textAnchor="middle" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)">Ley de Newton</text>
+
+    {/* Leyenda */}
+    <circle cx="476" cy="220" r="5" fill="#185FA5" opacity="0.8"/>
+    <text x="488" y="224" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)">Perfil de velocidad</text>
+    <circle cx="476" cy="244" r="5" fill="#BA7517" opacity="0.8"/>
+    <text x="488" y="248" fill="var(--color-text-muted)" fontSize="12" fontFamily="var(--font-sans)">Esfuerzo τ</text>
+  </svg>
+);
 
 // ─────────────────────────────────────────────
 // TYPES
@@ -64,6 +142,7 @@ interface AnalysisItem {
   body: string;
   delta?: DeltaTrend;
   deltaLabel?: string;
+  isAI?: boolean;
 }
 
 type ChatMsg = {
@@ -1491,7 +1570,7 @@ function DeltaIcon({ trend, label }: { trend: DeltaTrend; label?: string }) {
 
 function SimpleMarkdown({ text }: { text: string }) {
   return (
-    <div className="text-[var(--color-text-soft)] leading-relaxed space-y-2 text-sm markdown-body">
+    <div className="text-[var(--color-text-soft)] leading-relaxed space-y-3 text-sm markdown-body prose dark:prose-invert prose-sm max-w-none">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
     </div>
   );
@@ -1523,7 +1602,7 @@ interface AnalysisPanelProps {
   analysis: AnalysisItem[];
 }
 
-function AnalysisPanel({ analysis }: AnalysisPanelProps) {
+function AnalysisPanel({ analysis, labContext }: { analysis: AnalysisItem[], labContext: LabContext }) {
   const strings = I18N.es;
 
   const toneIcon = (tone: AnalysisTone) => {
@@ -1540,12 +1619,30 @@ function AnalysisPanel({ analysis }: AnalysisPanelProps) {
   };
 
   return (
-    <div className="space-y-2" role="region" aria-label="Análisis automático">
+    <div className="space-y-3" role="region" aria-label="Análisis automático">
+      {labContext === "couette" && (
+        <div className="p-4 rounded-2xl border text-xs text-[var(--color-text)] space-y-2 assistant-panel shadow-sm">
+          <div className="flex items-center gap-2">
+            <Layers size={14} className="text-brand-accent" />
+            <p className="font-black tracking-tight uppercase text-[10px]">Diagrama de Viscosidad de Newton</p>
+          </div>
+          <NewtonViscosityDiagram />
+          <p className="text-[var(--color-text-muted)] text-[10px] italic">
+            Visualización del perfil de velocidad lineal y el esfuerzo cortante constante.
+          </p>
+        </div>
+      )}
+      
       {analysis.map((a, i) => (
         <div
           key={`a-${i}`}
-          className="p-4 rounded-2xl bg-white/5 border border-brand-border/60 text-xs text-[var(--color-text)] space-y-1 assistant-panel"
+          className={`p-4 rounded-2xl border text-xs text-[var(--color-text)] space-y-1 assistant-panel shadow-sm relative overflow-hidden ${a.isAI ? 'border-brand-accent/30' : ''}`}
         >
+          {a.isAI && (
+            <div className="absolute top-0 right-0 px-2 py-0.5 bg-brand-accent/10 border-b border-l border-brand-accent/20 rounded-bl-lg">
+              <span className="text-[7px] font-black uppercase tracking-tighter text-brand-accent">IA Insight</span>
+            </div>
+          )}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-2">
               {toneIcon(a.tone)}
@@ -1555,7 +1652,7 @@ function AnalysisPanel({ analysis }: AnalysisPanelProps) {
               )}
             </div>
             {a.tone !== "ok" && a.tone !== "info" && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-amber-400 shrink-0">
+              <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-amber-500 shrink-0">
                 <TriangleAlert size={12} />
                 {toneLabel(a.tone)}
               </span>
@@ -1581,10 +1678,17 @@ interface ChatWindowProps {
 
 function ChatWindow({ chat, isTyping }: ChatWindowProps) {
   const strings = I18N.es;
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2000);
+  };
 
   return (
     <div
-      className="pt-3 space-y-3 border-t border-brand-border/40"
+      className="pt-4 space-y-4 border-t border-brand-border/40"
       role="log"
       aria-live="polite"
       aria-label="Historial del chat"
@@ -1596,21 +1700,35 @@ function ChatWindow({ chat, isTyping }: ChatWindowProps) {
             m.role === "user" ? "flex-row-reverse" : "flex-row"
           }`}
         >
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-inner ${
             m.role === "user" ? "bg-brand-secondary/20 text-brand-secondary" : "bg-brand-accent/20 text-brand-accent"
           }`}>
-            {m.role === "user" ? <span className="text-xs font-bold">Tú</span> : <MessageCircle size={16} />}
+            {m.role === "user" ? <span className="text-[8px] font-black uppercase">Tú</span> : <MessageCircle size={14} />}
           </div>
           <div
-            className={`p-4 rounded-2xl border text-sm leading-relaxed max-w-[85%] ${
-              m.role === "user" ? "assistant-bubble-user rounded-tr-sm" : "assistant-bubble-ai rounded-tl-sm"
+            className={`group relative p-4 rounded-2xl border text-sm leading-relaxed max-w-[88%] shadow-sm transition-all duration-300 ${
+              m.role === "user" 
+                ? "bg-brand-secondary/5 border-brand-secondary/20 text-[var(--color-text)] rounded-tr-sm" 
+                : "bg-[var(--color-brand-card)] border-brand-border/60 text-[var(--color-text-soft)] rounded-tl-sm"
             }`}
           >
+            {m.role === "assistant" && (
+              <button
+                onClick={() => copyToClipboard(m.text, i)}
+                className="absolute top-2 right-2 p-1.5 rounded-lg bg-white/5 border border-brand-border opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/10 text-[var(--color-text-muted)]"
+                title="Copiar respuesta"
+              >
+                {copiedIndex === i ? <Check size={12} className="text-brand-accent" /> : <Copy size={12} />}
+              </button>
+            )}
             {m.role === "assistant" ? (
               <SimpleMarkdown text={m.text} />
             ) : (
-              <p className="text-[var(--color-text-soft)]">{m.text}</p>
+              <p className="font-medium">{m.text}</p>
             )}
+            <div className="mt-2 flex items-center justify-end gap-1 opacity-20 text-[8px] font-mono uppercase tracking-tighter">
+              <span>{new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
           </div>
         </div>
       ))}
@@ -1618,38 +1736,36 @@ function ChatWindow({ chat, isTyping }: ChatWindowProps) {
       <AnimatePresence>
         {isTyping && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className="flex gap-3 flex-row"
             role="status"
             aria-label={strings.typing}
           >
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-brand-accent/20 text-brand-accent">
-              <MessageCircle size={16} />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-brand-accent/20 text-brand-accent shadow-inner">
+              <Loader2 size={14} className="animate-spin" />
             </div>
-            <div className="p-4 rounded-2xl border border-brand-border bg-black/20 text-xs flex items-center gap-2 text-[var(--color-text-muted)] assistant-bubble assistant-bubble-ai rounded-tl-sm">
-              <div className="flex items-center gap-1">
+            <div className="p-4 rounded-2xl border border-brand-border/40 bg-white/5 text-xs flex items-center gap-3 text-[var(--color-text-muted)] assistant-bubble assistant-bubble-ai rounded-tl-sm">
+              <div className="flex items-center gap-1.5">
                 <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0 }}
                   className="w-1.5 h-1.5 bg-brand-accent rounded-full"
                 />
                 <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
                   className="w-1.5 h-1.5 bg-brand-accent rounded-full"
                 />
                 <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
                   className="w-1.5 h-1.5 bg-brand-accent rounded-full"
                 />
               </div>
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                {strings.typing}
-              </span>
+              <span className="text-[10px] font-bold text-brand-accent uppercase tracking-widest">IA Pensando...</span>
             </div>
           </motion.div>
         )}
@@ -1764,12 +1880,73 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
     [input],
   );
 
-  const analysis = useMemo(
-    () => analysisFor(derived, unitSystem, prevInput),
-    [derived, unitSystem, prevInput],
-  );
+  const [aiAnalysis, setAiAnalysis] = useState<AnalysisItem[] | null>(null);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  // AI-Powered Live Analysis & Suggestions
+  useEffect(() => {
+    if (!open) return;
+    
+    const timer = setTimeout(async () => {
+      setIsAnalyzing(true);
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const prompt = `Analiza el estado actual del laboratorio de mecánica de fluidos.
+Laboratorio: ${input.labContext}
+Parámetros: ${JSON.stringify(derived)}
+Unidades: ${unitSystem}
+
+Proporciona:
+1. 3 puntos clave (insights) breves.
+2. 3 sugerencias de preguntas que el usuario podría hacer a continuación.
+
+Responde en formato JSON:
+{
+  "insights": [
+    {"title": "Título breve", "body": "Explicación de 1 frase", "tone": "ok | warn | bad"}
+  ],
+  "suggestions": ["Pregunta 1", "Pregunta 2", "Pregunta 3"]
+}`;
+
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: prompt,
+          config: {
+            responseMimeType: "application/json",
+          }
+        });
+
+        const data = JSON.parse(response.text);
+        if (data.insights) {
+          setAiAnalysis(data.insights.map((it: any) => ({ ...it, isAI: true })));
+        }
+        if (data.suggestions) {
+          setAiSuggestions(data.suggestions);
+        }
+      } catch (err) {
+        console.error("AI Analysis failed:", err);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, [derived, unitSystem, open, input.labContext]);
+
+  const analysis = useMemo(() => {
+    const base = analysisFor(derived, unitSystem, prevInput);
+    if (aiAnalysis && Array.isArray(aiAnalysis)) {
+      return [...base, ...aiAnalysis];
+    }
+    return base;
+  }, [derived, unitSystem, prevInput, aiAnalysis]);
 
   const cfg = LAB_CONFIG[input.labContext];
+  const combinedPrompts = useMemo(() => {
+    const base = cfg.quickPrompts || [];
+    return [...new Set([...aiSuggestions, ...base])].slice(0, 5);
+  }, [cfg.quickPrompts, aiSuggestions]);
 
   // Unread count
   const readCountRef = useRef<number>(0);
@@ -1802,77 +1979,85 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
 
   // Send message
   const send = useCallback(
-    (text: string) => {
+    async (text: string) => {
       const q = text.trim();
       if (!q || isTyping) return;
 
       const userMsg: ChatMsg = { role: "user", text: q, timestamp: Date.now() };
-
-      const historyWithUser = [
-        ...chatRef.current,
-        userMsg,
-      ];
+      const historyWithUser = [...chatRef.current, userMsg];
 
       setChat(historyWithUser);
       setDraft("");
       setIsTyping(true);
 
-      setTimeout(async () => {
-        try {
-          let reply = "";
-          try {
-            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-            const systemInstruction = `Eres un asistente experto en mecánica de fluidos para la aplicación FluidLab.
+      try {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        const systemInstruction = `Eres un asistente experto en mecánica de fluidos para la aplicación FluidLab.
 El usuario está actualmente en el laboratorio: ${input.labContext}.
 Los parámetros actuales del laboratorio son: ${JSON.stringify(derived)}.
 Sistema de unidades actual: ${unitSystem}.
+
 Responde de manera concisa, educativa y directamente relacionada con la mecánica de fluidos.
-Si el usuario hace una pregunta general, responde basándote en los principios de la física.
-Si la pregunta es sobre los parámetros actuales, usa los valores proporcionados.`;
+Usa formato Markdown para tus respuestas.
+Si el usuario pregunta sobre la ley de Newton de la viscosidad o el gradiente de velocidad, menciona que puede ver el diagrama interactivo en el panel de análisis.
 
-            // Format history for context (last 5 messages to save tokens)
-            const recentHistory = historyWithUser.slice(-5).map(m => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.text}`).join('\n');
-            const prompt = `Historial reciente:\n${recentHistory}\n\nPregunta actual del usuario: ${q}`;
+Directrices de respuesta:
+1. Sé técnico pero accesible.
+2. Usa negritas para conceptos clave.
+3. Si hay cálculos involucrados, muestra los pasos.
+4. Si el usuario está en el lab de Couette, enfatiza la relación lineal entre esfuerzo y gradiente.`;
 
-            const response = await ai.models.generateContent({
-              model: "gemini-3.1-pro-preview",
-              contents: prompt,
-              config: {
-                systemInstruction,
-              }
-            });
-            reply = response.text || "";
-          } catch (apiError) {
-            console.error("Gemini API Error, falling back to local NLP:", apiError);
-            reply = answerQuestionV2(
-              q,
-              derived,
-              unitSystem,
-              historyWithUser,
-            );
-          }
+        const recentHistory = historyWithUser.slice(-6).map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.text }]
+        }));
 
-          if (!reply) {
-             reply = answerQuestionV2(q, derived, unitSystem, historyWithUser);
-          }
+        // Remove the last message from history as it's the current prompt
+        const historyForChat = recentHistory.slice(0, -1);
 
-          const assistantMsg: ChatMsg = {
-            role: "assistant",
-            text: reply,
-            timestamp: Date.now(),
-          };
-          setChat((prev) => [...prev, assistantMsg]);
-        } catch {
-          const errorMsg: ChatMsg = {
-            role: "assistant",
-            text: strings.errorProcessing,
-            timestamp: Date.now(),
-          };
-          setChat((prev) => [...prev, errorMsg]);
-        } finally {
-          setIsTyping(false);
+        const chatSession = ai.chats.create({
+          model: "gemini-3.1-pro-preview",
+          config: {
+            systemInstruction,
+          },
+          history: historyForChat,
+        });
+
+        const result = await chatSession.sendMessageStream({ message: q });
+        
+        let fullText = "";
+        const assistantMsg: ChatMsg = {
+          role: "assistant",
+          text: "",
+          timestamp: Date.now(),
+        };
+
+        setChat((prev) => [...prev, assistantMsg]);
+
+        for await (const chunk of result) {
+          const chunkText = chunk.text;
+          fullText += chunkText;
+          setChat((prev) => {
+            const newChat = [...prev];
+            const last = newChat[newChat.length - 1];
+            if (last && last.role === "assistant") {
+              last.text = fullText;
+            }
+            return newChat;
+          });
         }
-      }, 0);
+      } catch (apiError) {
+        console.error("Gemini API Error, falling back to local NLP:", apiError);
+        const reply = answerQuestionV2(q, derived, unitSystem, historyWithUser);
+        const assistantMsg: ChatMsg = {
+          role: "assistant",
+          text: reply,
+          timestamp: Date.now(),
+        };
+        setChat((prev) => [...prev, assistantMsg]);
+      } finally {
+        setIsTyping(false);
+      }
     },
     [input.labContext, derived, unitSystem, isTyping, strings.errorProcessing],
   );
@@ -1957,7 +2142,7 @@ Si la pregunta es sobre los parámetros actuales, usa los valores proporcionados
             {/* Quick prompts */}
             <div className="px-5 pt-4 space-y-3">
               <QuickPrompts
-                prompts={cfg.quickPrompts}
+                prompts={combinedPrompts}
                 onSelect={send}
                 disabled={isTyping}
               />
@@ -1966,9 +2151,16 @@ Si la pregunta es sobre los parámetros actuales, usa los valores proporcionados
             {/* Analysis + Chat */}
             <div
               ref={listRef}
-              className="p-5 space-y-3 max-h-[22rem] overflow-y-auto assistant-scroll"
+              className="p-5 space-y-4 max-h-[26rem] overflow-y-auto assistant-scroll"
             >
-              <AnalysisPanel analysis={analysis} />
+              {isAnalyzing && (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-brand-accent/5 border border-brand-accent/10 animate-pulse">
+                  <Loader2 size={12} className="animate-spin text-brand-accent" />
+                  <span className="text-[10px] font-bold text-brand-accent uppercase tracking-widest">IA Analizando datos...</span>
+                </div>
+              )}
+              
+              <AnalysisPanel analysis={analysis} labContext={input.labContext} />
 
               {chat.length > 0 && (
                 <ChatWindow chat={chat} isTyping={isTyping} />
