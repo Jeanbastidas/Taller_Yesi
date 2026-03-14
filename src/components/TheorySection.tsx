@@ -103,9 +103,6 @@ export const TheorySection = () => {
         </div>
       </motion.div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          PARTE 1: FUNDAMENTACIÓN TEÓRICA
-      ══════════════════════════════════════════════════════════════════════ */}
       {/* Workshop Brief */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -340,6 +337,7 @@ export const TheorySection = () => {
             </div>
           </motion.div>
 
+          {/* ── Figura: Ley de Newton de la Viscosidad (imagen real) ── */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -347,34 +345,19 @@ export const TheorySection = () => {
             transition={{ duration: 0.7 }}
             className="space-y-3"
           >
-            <div className="relative glass-card rounded-[2.5rem] p-8 border-brand-border/50 overflow-hidden">
-              <div className="aspect-square bg-grid-small rounded-2xl flex items-center justify-center relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-accent/5 to-transparent" />
-                <div className="space-y-4 w-full px-12">
-                  {[1, 0.8, 0.6, 0.4, 0.2].map((op, i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ x: [0, 18 * (5 - i), 0] }}
-                      transition={{
-                        duration: 3.5,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: i * 0.2,
-                      }}
-                      className="h-4 rounded-full bg-brand-accent"
-                      style={{ opacity: op * 0.55, width: `${100 - i * 15}%` }}
-                    />
-                  ))}
-                </div>
-                <div className="absolute bottom-6 left-6 right-6 text-center">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                    Gradiente de velocidad entre capas
-                  </p>
-                </div>
+            <div className="relative glass-card rounded-[2.5rem] p-6 border-brand-border/50 overflow-hidden">
+              {/* Fondo blanco para que la imagen no choque con el glass oscuro */}
+              <div className="rounded-2xl bg-white overflow-hidden flex items-center justify-center">
+                <img
+                  src="/assets/newton-viscosity.png"
+                  alt="Gráfica Ley de Newton de la Viscosidad: esfuerzo cortante τ vs gradiente de velocidad ∂u/∂y, pendiente igual a μ"
+                  className="w-full h-auto object-contain"
+                  style={{ maxHeight: "420px" }}
+                />
               </div>
             </div>
             <FigCaption
-              caption="Perfil de velocidades laminar — las capas superiores se desplazan más rápido generando fricción interna (viscosidad)."
+              caption="Ley de Newton de la Viscosidad — la relación lineal entre τ y ∂u/∂y define un fluido newtoniano; la pendiente de la recta es la viscosidad dinámica μ."
               source="Elaboración propia"
             />
           </motion.div>
@@ -836,7 +819,7 @@ export const TheorySection = () => {
                       <motion.div
                         animate={{ y: [0, -4, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
-                        onMouseEnter={() => setHoveredForce('Fb')}
+                        onMouseEnter={() => setHoveredForce("Fb")}
                         onMouseLeave={() => setHoveredForce(null)}
                         whileHover={{ scale: 1.05 }}
                       >
@@ -850,7 +833,7 @@ export const TheorySection = () => {
                       <motion.div
                         animate={{ y: [0, -6, 0] }}
                         transition={{ duration: 2.3, repeat: Infinity }}
-                        onMouseEnter={() => setHoveredForce('Fd')}
+                        onMouseEnter={() => setHoveredForce("Fd")}
                         onMouseLeave={() => setHoveredForce(null)}
                         whileHover={{ scale: 1.05 }}
                       >
@@ -868,7 +851,7 @@ export const TheorySection = () => {
                       animate={{ y: [0, 2, 0] }}
                       transition={{ duration: 2, repeat: Infinity }}
                       className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-200 to-slate-400 dark:from-slate-600 dark:to-slate-800 border-2 border-white dark:border-slate-300 shadow-xl flex items-center justify-center"
-                      onMouseEnter={() => setHoveredForce('particle')}
+                      onMouseEnter={() => setHoveredForce("particle")}
                       onMouseLeave={() => setHoveredForce(null)}
                       whileHover={{ scale: 1.05 }}
                     >
@@ -880,7 +863,7 @@ export const TheorySection = () => {
                       <motion.div
                         animate={{ y: [0, 5, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
-                        onMouseEnter={() => setHoveredForce('Fg')}
+                        onMouseEnter={() => setHoveredForce("Fg")}
                         onMouseLeave={() => setHoveredForce(null)}
                         whileHover={{ scale: 1.05 }}
                       >
@@ -926,40 +909,57 @@ export const TheorySection = () => {
                     exit={{ opacity: 0, y: 10 }}
                     className="w-full glass-card p-4 rounded-2xl text-center"
                   >
-                    {hoveredForce === 'Fg' && (
+                    {hoveredForce === "Fg" && (
                       <div>
-                        <p className="text-sm font-bold text-rose-500">Fuerza de Gravedad (Fg)</p>
+                        <p className="text-sm font-bold text-rose-500">
+                          Fuerza de Gravedad (Fg)
+                        </p>
                         <p className="text-xs text-slate-500 mt-1">
                           <InlineMath math="F_g = m g = \frac{4}{3} \pi r^3 \rho_p g" />
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">Actúa hacia abajo debido al peso de la partícula.</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Actúa hacia abajo debido al peso de la partícula.
+                        </p>
                       </div>
                     )}
-                    {hoveredForce === 'Fb' && (
+                    {hoveredForce === "Fb" && (
                       <div>
-                        <p className="text-sm font-bold text-brand-secondary">Fuerza de Empuje (Fb)</p>
+                        <p className="text-sm font-bold text-brand-secondary">
+                          Fuerza de Empuje (Fb)
+                        </p>
                         <p className="text-xs text-slate-500 mt-1">
                           <InlineMath math="F_b = m_f g = \frac{4}{3} \pi r^3 \rho_f g" />
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">Principio de Arquímedes: empuje hacia arriba del fluido.</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Principio de Arquímedes: empuje hacia arriba del
+                          fluido.
+                        </p>
                       </div>
                     )}
-                    {hoveredForce === 'Fd' && (
+                    {hoveredForce === "Fd" && (
                       <div>
-                        <p className="text-sm font-bold text-amber-500">Fuerza de Arrastre (Fd)</p>
+                        <p className="text-sm font-bold text-amber-500">
+                          Fuerza de Arrastre (Fd)
+                        </p>
                         <p className="text-xs text-slate-500 mt-1">
                           <InlineMath math="F_d = 6 \pi \mu r v" />
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">Ley de Stokes: resistencia viscosa del fluido.</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Ley de Stokes: resistencia viscosa del fluido.
+                        </p>
                       </div>
                     )}
-                    {hoveredForce === 'particle' && (
+                    {hoveredForce === "particle" && (
                       <div>
-                        <p className="text-sm font-bold text-slate-600">Partícula Esférica</p>
+                        <p className="text-sm font-bold text-slate-600">
+                          Partícula Esférica
+                        </p>
                         <p className="text-xs text-slate-500 mt-1">
                           Radio r, densidad ρ_p, masa m = (4/3)πr³ρ_p
                         </p>
-                        <p className="text-xs text-slate-400 mt-1">En sedimentación libre, alcanza velocidad terminal Vt.</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          En sedimentación libre, alcanza velocidad terminal Vt.
+                        </p>
                       </div>
                     )}
                   </motion.div>
