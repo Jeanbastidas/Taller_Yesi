@@ -71,6 +71,174 @@ const FigCaption = ({
   </p>
 );
 
+// ── Newton Viscosity Law Chart (SVG diagram, fiel a la imagen original) ──
+const NewtonViscosityChart = () => (
+  <svg
+    width="100%"
+    viewBox="0 0 500 420"
+    xmlns="http://www.w3.org/2000/svg"
+    style={{ display: "block" }}
+  >
+    <defs>
+      <marker
+        id="nv-arrow"
+        viewBox="0 0 10 10"
+        refX="8"
+        refY="5"
+        markerWidth="7"
+        markerHeight="7"
+        orient="auto-start-reverse"
+      >
+        <path
+          d="M2 1L8 5L2 9"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </marker>
+    </defs>
+
+    {/* Grid lines — subtle */}
+    <g stroke="rgba(148,163,184,0.12)" strokeWidth="0.6">
+      {[60, 100, 140, 180, 220, 260, 300].map((y) => (
+        <line key={`h${y}`} x1="70" y1={y} x2="450" y2={y} />
+      ))}
+      {[110, 155, 200, 245, 290, 335, 380, 425].map((x) => (
+        <line key={`v${x}`} x1={x} y1="40" x2={x} y2="340" />
+      ))}
+    </g>
+
+    {/* Y axis */}
+    <line
+      x1="70"
+      y1="340"
+      x2="70"
+      y2="26"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      markerEnd="url(#nv-arrow)"
+    />
+
+    {/* X axis */}
+    <line
+      x1="70"
+      y1="340"
+      x2="466"
+      y2="340"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      markerEnd="url(#nv-arrow)"
+    />
+
+    {/* Origin label */}
+    <text
+      x="56"
+      y="352"
+      textAnchor="middle"
+      fontSize="14"
+      fill="currentColor"
+      opacity="0.65"
+    >
+      0
+    </text>
+
+    {/* Y axis label: τ (italic, larger) */}
+    <text
+      x="52"
+      y="34"
+      textAnchor="middle"
+      fontSize="22"
+      fontStyle="italic"
+      fill="currentColor"
+      opacity="0.9"
+    >
+      τ
+    </text>
+
+    {/* X axis label: ∂u/∂y|y as stacked fraction */}
+    <text
+      x="464"
+      y="331"
+      textAnchor="start"
+      fontSize="14"
+      fontStyle="italic"
+      fill="currentColor"
+      opacity="0.9"
+    >
+      ∂u
+    </text>
+    <line
+      x1="463"
+      y1="335"
+      x2="481"
+      y2="335"
+      stroke="currentColor"
+      strokeWidth="1"
+      opacity="0.75"
+    />
+    <text
+      x="464"
+      y="349"
+      textAnchor="start"
+      fontSize="14"
+      fontStyle="italic"
+      fill="currentColor"
+      opacity="0.9"
+    >
+      ∂y
+    </text>
+    <text
+      x="483"
+      y="349"
+      textAnchor="start"
+      fontSize="14"
+      fontStyle="italic"
+      fill="currentColor"
+      opacity="0.9"
+    >
+      |y
+    </text>
+
+    {/* The linear line from origin (70,340) to top-right (430, 52) */}
+    <line
+      x1="70"
+      y1="340"
+      x2="430"
+      y2="52"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      opacity="0.88"
+    />
+
+    {/* Dashed leader from midpoint of line to label */}
+    <line
+      x1="268"
+      y1="206"
+      x2="315"
+      y2="168"
+      stroke="rgba(96,165,250,0.55)"
+      strokeWidth="0.9"
+      strokeDasharray="3 3"
+    />
+    <circle cx="268" cy="206" r="3.5" fill="rgba(96,165,250,0.5)" />
+
+    {/* Label: pendiente = μ */}
+    <text
+      x="320"
+      y="165"
+      textAnchor="start"
+      fontSize="14"
+      fontStyle="italic"
+      fill="#60a5fa"
+    >
+      pendiente = μ
+    </text>
+  </svg>
+);
+
 export const TheorySection = () => {
   const { unitSystem } = useContext(UnitContext);
   const units = useMemo(() => getUnits(unitSystem), [unitSystem]);
@@ -337,7 +505,7 @@ export const TheorySection = () => {
             </div>
           </motion.div>
 
-          {/* ── Figura: Ley de Newton de la Viscosidad (imagen real) ── */}
+          {/* ── Figura: Diagrama SVG Ley de Newton de la Viscosidad ── */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -345,16 +513,11 @@ export const TheorySection = () => {
             transition={{ duration: 0.7 }}
             className="space-y-3"
           >
-            <div className="relative glass-card rounded-[2.5rem] p-6 border-brand-border/50 overflow-hidden">
-              {/* Fondo blanco para que la imagen no choque con el glass oscuro */}
-              <div className="rounded-2xl bg-white overflow-hidden flex items-center justify-center">
-                <img
-                  src="/assets/newton-viscosity.png"
-                  alt="Gráfica Ley de Newton de la Viscosidad: esfuerzo cortante τ vs gradiente de velocidad ∂u/∂y, pendiente igual a μ"
-                  className="w-full h-auto object-contain"
-                  style={{ maxHeight: "420px" }}
-                />
-              </div>
+            <div className="relative glass-card rounded-[2.5rem] p-8 border-brand-border/50 overflow-hidden">
+              <p className="text-center text-sm font-bold text-[var(--color-text)] mb-4 tracking-wide">
+                Ley de Newton de la Viscosidad
+              </p>
+              <NewtonViscosityChart />
             </div>
             <FigCaption
               caption="Ley de Newton de la Viscosidad — la relación lineal entre τ y ∂u/∂y define un fluido newtoniano; la pendiente de la recta es la viscosidad dinámica μ."
