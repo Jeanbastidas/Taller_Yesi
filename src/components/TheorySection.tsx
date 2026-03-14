@@ -20,7 +20,7 @@ const VarTable = ({
   vars: { sym: string; desc: string; unit: string }[];
 }) => (
   <div className="overflow-x-auto rounded-2xl border border-brand-border/40">
-    <table className="w-full text-xs">
+    <table className="w-full text-xs text-technical">
       <thead>
         <tr className="border-b border-brand-border/40 bg-white/5">
           <th className="text-left px-4 py-2.5 text-[9px] font-black uppercase tracking-widest text-slate-500">
@@ -60,7 +60,7 @@ const FigCaption = ({
   caption: string;
   source?: string;
 }) => (
-  <p className="text-center text-[9px] text-slate-500 font-medium mt-2 italic">
+  <p className="text-center text-[9px] text-slate-500 font-medium mt-2 italic text-technical">
     <span className="text-brand-accent/60">Fig.</span> {caption}
     {source && (
       <>
@@ -78,6 +78,7 @@ const NewtonViscosityChart = () => (
     viewBox="0 0 500 420"
     xmlns="http://www.w3.org/2000/svg"
     style={{ display: "block" }}
+    className="glow-accent"
   >
     <defs>
       <marker
@@ -259,7 +260,7 @@ export const TheorySection = () => {
             Autores del Proyecto
           </span>
         </div>
-        <h3 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">
+        <h3 className="text-2xl font-bold tracking-tight text-[var(--color-text)] text-editorial">
           Taller: Dinámica de Fluidos Viscosos y Fenómenos de Transporte
         </h3>
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-[var(--color-text-muted)] font-medium">
@@ -284,7 +285,7 @@ export const TheorySection = () => {
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
               PUNTO 1
             </p>
-            <h3 className="text-2xl font-black tracking-tight text-[var(--color-text)]">
+            <h3 className="text-2xl font-black tracking-tight text-[var(--color-text)] text-editorial">
               Objetivo general
             </h3>
           </div>
@@ -375,7 +376,7 @@ export const TheorySection = () => {
           <div className="w-10 h-10 rounded-xl bg-brand-accent/20 flex items-center justify-center text-brand-accent border border-brand-accent/30">
             <span className="font-black text-xs">P1</span>
           </div>
-          <h2 className="text-4xl font-black tracking-tighter uppercase text-[var(--color-text)]">
+          <h2 className="text-4xl font-black tracking-tighter uppercase text-[var(--color-text)] text-editorial">
             Parte 1: Fundamentación Teórica
           </h2>
         </div>
@@ -540,7 +541,7 @@ export const TheorySection = () => {
               1.2 Flujo de Couette
             </div>
 
-            <h2 className="text-5xl font-black tracking-tighter text-[var(--color-text)] leading-tight">
+            <h2 className="text-5xl font-black tracking-tighter text-[var(--color-text)] leading-tight text-editorial">
               FLUJO DE
               <br />
               <span className="text-brand-secondary">COUETTE</span>
@@ -677,7 +678,7 @@ export const TheorySection = () => {
         {/* ── 1.3 Reynolds & Poiseuille ── */}
         <div className="space-y-12">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <h2 className="text-5xl font-black tracking-tighter text-[var(--color-text)]">
+            <h2 className="text-5xl font-black tracking-tighter text-[var(--color-text)] text-editorial">
               REGÍMENES Y <span className="text-brand-accent">CAUDALES</span>
             </h2>
             <p className="text-slate-400">
@@ -700,7 +701,7 @@ export const TheorySection = () => {
                   <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                     1.3
                   </p>
-                  <h3 className="text-xl font-bold text-[var(--color-text)]">
+                  <h3 className="text-xl font-bold text-[var(--color-text)] text-editorial">
                     Número de Reynolds (Re)
                   </h3>
                 </div>
@@ -793,7 +794,7 @@ export const TheorySection = () => {
                   <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">
                     1.4
                   </p>
-                  <h3 className="text-xl font-bold text-[var(--color-text)]">
+                  <h3 className="text-xl font-bold text-[var(--color-text)] text-editorial">
                     Ecuación de Poiseuille
                   </h3>
                 </div>
@@ -864,7 +865,7 @@ export const TheorySection = () => {
               1.5 Ley de Stokes y Velocidad Terminal
             </div>
 
-            <h2 className="text-5xl font-black tracking-tighter text-[var(--color-text)] leading-tight">
+            <h2 className="text-5xl font-black tracking-tighter text-[var(--color-text)] leading-tight text-editorial">
               LEY DE
               <br />
               <span className="text-brand-accent">STOKES</span>
@@ -951,7 +952,7 @@ export const TheorySection = () => {
               <div className="absolute top-0 right-0 p-8 opacity-5">
                 <Info size={120} />
               </div>
-              <h3 className="text-xl font-bold mb-10 flex items-center gap-3 text-[var(--color-text)]">
+              <h3 className="text-xl font-bold mb-10 flex items-center gap-3 text-[var(--color-text)] text-editorial">
                 Diagrama de Cuerpo Libre
                 <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-normal">
                   (DCL)
