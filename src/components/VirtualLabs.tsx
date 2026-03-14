@@ -39,6 +39,8 @@ const FLUID_PRESETS = [
     color: "text-blue-500",
     hex: "#3b82f6",
     bg: "rgba(59, 130, 246, 0.1)",
+    desc: "Fluido estándar de baja viscosidad.",
+    viscosityType: "Newtoniano",
   },
   {
     name: "Aceite Motor",
@@ -47,6 +49,8 @@ const FLUID_PRESETS = [
     color: "text-amber-600",
     hex: "#d97706",
     bg: "rgba(217, 119, 6, 0.1)",
+    desc: "Lubricante común, viscosidad media.",
+    viscosityType: "Newtoniano",
   },
   {
     name: "Glicerina",
@@ -55,6 +59,8 @@ const FLUID_PRESETS = [
     color: "text-emerald-500",
     hex: "#10b981",
     bg: "rgba(16, 185, 129, 0.1)",
+    desc: "Fluido altamente viscoso y denso.",
+    viscosityType: "Newtoniano",
   },
   {
     name: "Miel",
@@ -63,6 +69,8 @@ const FLUID_PRESETS = [
     color: "text-orange-600",
     hex: "#ea580c",
     bg: "rgba(234, 88, 12, 0.1)",
+    desc: "Extremadamente viscoso.",
+    viscosityType: "Newtoniano",
   },
   {
     name: "Mercurio",
@@ -71,6 +79,8 @@ const FLUID_PRESETS = [
     color: "text-slate-500",
     hex: "#64748b",
     bg: "rgba(100, 116, 139, 0.2)",
+    desc: "Metal líquido de altísima densidad.",
+    viscosityType: "Newtoniano",
   },
   {
     name: "Sangre",
@@ -79,8 +89,57 @@ const FLUID_PRESETS = [
     color: "text-red-600",
     hex: "#dc2626",
     bg: "rgba(220, 38, 38, 0.1)",
+    desc: "Fluido biológico complejo.",
+    viscosityType: "No-Newtoniano (aprox.)",
   },
 ];
+
+const PhysicalHUD = ({ 
+  reynolds, 
+  velocity, 
+  pressure, 
+  label = "SISTEMA" 
+}: { 
+  reynolds?: number; 
+  velocity: number; 
+  pressure?: number; 
+  label?: string;
+}) => {
+  const state = useMemo(() => {
+    if (reynolds === undefined) return { label: "ESTABLE", color: "text-emerald-400" };
+    if (reynolds < 2300) return { label: "LAMINAR", color: "text-emerald-400" };
+    if (reynolds < 4000) return { label: "TRANSICIÓN", color: "text-amber-400" };
+    return { label: "TURBULENTO", color: "text-rose-400" };
+  }, [reynolds]);
+
+  return (
+    <div className="hud-panel rounded-2xl p-4 flex flex-wrap gap-6 items-center border-l-4 border-l-brand-accent">
+      <div className="flex flex-col">
+        <span className="hud-label">{label}</span>
+        <span className={`text-xs font-black tracking-widest ${state.color}`}>{state.label}</span>
+      </div>
+      
+      {reynolds !== undefined && (
+        <div className="flex flex-col">
+          <span className="hud-label">Reynolds (Re)</span>
+          <span className="hud-value">{reynolds.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+        </div>
+      )}
+
+      <div className="flex flex-col">
+        <span className="hud-label">Velocidad (V)</span>
+        <span className="hud-value">{velocity.toFixed(3)} m/s</span>
+      </div>
+
+      {pressure !== undefined && (
+        <div className="flex flex-col">
+          <span className="hud-label">Presión (ΔP)</span>
+          <span className="hud-value">{pressure.toFixed(1)} Pa</span>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const VirtualLabs = () => {
   const { unitSystem } = useContext(UnitContext);
@@ -123,6 +182,17 @@ export const VirtualLabs = () => {
   // 3D View toggles
   const [stokes3D, setStokes3D] = useState(true);
   const [couette3D, setCouette3D] = useState(true);
+
+  const [activeLab, setActiveLab] = useState<"poiseuille" | "stokes" | "couette">("poiseuille");
+
+  const openAssistant = (context: "poiseuille" | "stokes" | "couette") => {
+    setActiveLab(context);
+    window.dispatchEvent(
+      new CustomEvent("fluidlab:assistant", {
+        detail: { open: true, context },
+      }),
+    );
+  };
 
   // Selected Fluid Indices
   const [pFluidIdx, setPFluidIdx] = useState(0);
@@ -364,7 +434,7 @@ export const VirtualLabs = () => {
               <FlaskConical className="text-brand-accent" size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">
+              <h1 className="text-xl font-bold tracking-tight text-editorial">
                 VirtualLabs{" "}
                 <span className="text-brand-accent">FluidDynamics</span>
               </h1>
@@ -458,7 +528,7 @@ export const VirtualLabs = () => {
               <div className="w-10 h-10 rounded-xl bg-brand-accent/20 flex items-center justify-center text-brand-accent border border-brand-accent/30">
                 <span className="font-black text-xs">P4</span>
               </div>
-              <h2 className="text-3xl font-black tracking-tighter uppercase text-slate-200">
+              <h2 className="text-3xl font-black tracking-tighter uppercase text-slate-200 text-editorial">
                 Punto 4: Laboratorios{" "}
                 <span className="text-brand-accent">Virtuales</span>
               </h2>
@@ -479,20 +549,14 @@ export const VirtualLabs = () => {
             <div className="p-8 border-b border-brand-border flex items-center justify-between bg-white/5">
               <div className="flex items-center gap-3">
                 <Activity className="text-brand-secondary" size={20} />
-                <h3 className="text-xl font-bold tracking-tight text-[var(--color-text)]">
+                <h3 className="text-xl font-bold tracking-tight text-[var(--color-text)] text-editorial">
                   Lab 01: Perfil de Velocidad de Poiseuille
                 </h3>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    window.dispatchEvent(
-                      new CustomEvent("fluidlab:assistant", {
-                        detail: { open: true, context: "poiseuille" },
-                      }),
-                    )
-                  }
+                  onClick={() => openAssistant("poiseuille")}
                   className="p-2 rounded-xl bg-white/5 border border-brand-border text-[var(--color-text)] hover:bg-white/10 transition-colors"
                   title="Abrir asistente (Lab 01)"
                   aria-label="Abrir asistente (Lab 01)"
@@ -505,8 +569,25 @@ export const VirtualLabs = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12">
-              <div className="lg:col-span-4 p-8 space-y-8 border-r border-brand-border">
+            <div className="grid grid-cols-1 lg:grid-cols-12 relative">
+              {/* Particle Background */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
+                {Array.from({ length: 15 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="particle"
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                      backgroundColor: FLUID_PRESETS[pFluidIdx].hex,
+                      animationDuration: `${2 + Math.random() * 4}s`,
+                      animationDelay: `${Math.random() * 2}s`,
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div className="lg:col-span-4 p-8 space-y-8 border-r border-brand-border relative z-10">
                 <div className="space-y-6">
                   <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
                     <Settings size={14} />
@@ -521,13 +602,15 @@ export const VirtualLabs = () => {
                           setPParams({ ...pParams, mu: fluid.mu });
                           setPFluidIdx(idx);
                         }}
-                        className={`px-2 py-2 rounded-lg border text-[9px] font-bold transition-all ${
+                        className={`px-2 py-2 rounded-lg border text-[9px] font-bold transition-all flex flex-col items-center gap-1 ${
                           pFluidIdx === idx
                             ? "bg-brand-accent border-brand-accent text-brand-bg"
                             : "bg-[var(--glass-bg)] border-brand-border text-[var(--color-text-muted)] hover:border-brand-accent/50"
                         }`}
+                        title={fluid.desc}
                       >
-                        {fluid.name}
+                        <span>{fluid.name}</span>
+                        <span className="text-[7px] opacity-70">{fluid.viscosityType}</span>
                       </button>
                     ))}
                   </div>
@@ -658,6 +741,13 @@ export const VirtualLabs = () => {
                   )}
                 </div>
 
+                <PhysicalHUD 
+                  reynolds={(FLUID_PRESETS[pFluidIdx].rho * (qValue / (Math.PI * Math.pow(pParams.r, 2))) * (2 * pParams.r)) / currentPMu}
+                  velocity={qValue / (Math.PI * Math.pow(pParams.r, 2))}
+                  pressure={pParams.dp}
+                  label="LAB 01"
+                />
+
                 <div className="flex gap-2">
                   <button
                     onClick={() =>
@@ -687,8 +777,9 @@ export const VirtualLabs = () => {
                 </div>
               </div>
 
-              <div className="lg:col-span-8 p-8 bg-black/20">
-                <div className="h-[450px] w-full relative">
+              <div className="lg:col-span-8 p-8 bg-black/20 relative overflow-hidden">
+                <div className="scanline" />
+                <div className="h-[450px] w-full relative z-10">
                   <div className="absolute top-0 left-0 text-[10px] font-mono text-slate-600 uppercase tracking-widest">
                     Visualización de Perfil Laminar
                   </div>
@@ -701,6 +792,7 @@ export const VirtualLabs = () => {
                       data={profileData}
                       layout="vertical"
                       margin={{ top: 40, right: 40, left: 40, bottom: 40 }}
+                      className="oscilloscope-grid"
                     >
                       <defs>
                         {FLUID_PRESETS.map((fluid, idx) => (
@@ -715,49 +807,55 @@ export const VirtualLabs = () => {
                             <stop
                               offset="5%"
                               stopColor={fluid.hex}
-                              stopOpacity={0.3}
+                              stopOpacity={0.4}
                             />
                             <stop
                               offset="95%"
                               stopColor={fluid.hex}
-                              stopOpacity={0.05}
+                              stopOpacity={0.1}
                             />
                           </linearGradient>
                         ))}
                       </defs>
                       <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="#2d2d35"
-                        vertical={false}
+                        strokeDasharray="0"
+                        stroke="rgba(45, 212, 191, 0.1)"
+                        vertical={true}
                       />
                       <XAxis type="number" hide />
                       <YAxis
                         dataKey="r"
                         type="number"
                         domain={[pParams.r * -1, pParams.r]}
-                        stroke="#475569"
-                        fontSize={10}
-                        tickFormatter={(val) =>
-                          `${conv.L(val).toFixed(2)}${units.L}`
-                        }
+                        hide
                       />
                       <Tooltip
-                        contentStyle={{
-                          backgroundColor: "#16161a",
-                          border: "1px solid #2d2d35",
-                          borderRadius: "12px",
-                          fontSize: "12px",
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="hud-panel p-3 rounded-xl border border-brand-accent/30">
+                                <p className="text-[10px] font-mono text-brand-accent uppercase tracking-widest mb-1">Lectura de Sensor</p>
+                                <p className="text-xs font-mono text-slate-200">
+                                  r: {Number(payload[0].payload.r).toFixed(3)} m
+                                </p>
+                                <p className="text-xs font-mono text-brand-accent font-bold">
+                                  u: {Number(payload[0].value).toFixed(4)} m/s
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
                         }}
-                        itemStyle={{ color: "#00ff9d" }}
                       />
                       <Area
                         type="monotone"
                         dataKey="u"
                         stroke={FLUID_PRESETS[pFluidIdx].hex}
                         strokeWidth={3}
+                        fillOpacity={1}
                         fill={`url(#colorU-${pFluidIdx})`}
-                        isAnimationActive={true}
-                        animationDuration={1000}
+                        isAnimationActive={!reduceMotion}
+                        className="oscilloscope-glow"
                       />
                       {comparisonData.find((c) => c.labId === "lab1") && (
                         <Area
@@ -796,20 +894,14 @@ export const VirtualLabs = () => {
             <div className="p-8 border-b border-brand-border flex items-center justify-between bg-white/5">
               <div className="flex items-center gap-3">
                 <RotateCcw className="text-brand-accent" size={20} />
-                <h3 className="text-xl font-bold tracking-tight text-[var(--color-text)]">
+                <h3 className="text-xl font-bold tracking-tight text-[var(--color-text)] text-editorial">
                   Lab 02: Sedimentación de Partícula (Stokes)
                 </h3>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    window.dispatchEvent(
-                      new CustomEvent("fluidlab:assistant", {
-                        detail: { open: true, context: "stokes" },
-                      }),
-                    )
-                  }
+                  onClick={() => openAssistant("stokes")}
                   className="p-2 rounded-xl bg-white/5 border border-brand-border text-[var(--color-text)] hover:bg-white/10 transition-colors"
                   title="Abrir asistente (Lab 02)"
                   aria-label="Abrir asistente (Lab 02)"
@@ -1009,7 +1101,44 @@ export const VirtualLabs = () => {
               </div>
 
               <div className="lg:col-span-8 p-8 bg-black/10 relative flex items-center justify-center overflow-hidden">
+                <div className="scanline" />
                 <div className="absolute inset-0 bg-grid opacity-10"></div>
+                
+                {/* HUD Overlay */}
+                <div className="absolute top-4 right-4 z-50">
+                  <PhysicalHUD
+                    reynolds={rep}
+                    velocity={vt}
+                    pressure={6 * Math.PI * sParams.mu * sParams.radius * vt} // Using Drag Force as "Pressure/Force" indicator
+                    label="LAB 02"
+                  />
+                </div>
+
+                {/* Particle Background */}
+                <div className="absolute inset-0 pointer-events-none opacity-20">
+                  {Array.from({ length: 15 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute rounded-full bg-brand-accent/30 blur-[1px]"
+                      style={{
+                        width: Math.random() * 3 + 1 + "px",
+                        height: Math.random() * 3 + 1 + "px",
+                        left: Math.random() * 100 + "%",
+                        top: Math.random() * 100 + "%",
+                      }}
+                      animate={{
+                        y: [0, 50, 0],
+                        opacity: [0.2, 0.5, 0.2],
+                      }}
+                      transition={{
+                        duration: 5 + Math.random() * 5,
+                        repeat: Infinity,
+                        ease: "linear",
+                        delay: Math.random() * 5,
+                      }}
+                    />
+                  ))}
+                </div>
 
                 {/* -- Vista 3D -- */}
                 <div
@@ -1270,20 +1399,14 @@ export const VirtualLabs = () => {
             <div className="p-8 border-b border-brand-border flex items-center justify-between bg-white/5">
               <div className="flex items-center gap-3">
                 <Activity className="text-brand-accent" size={20} />
-                <h3 className="text-xl font-bold tracking-tight text-slate-900">
+                <h3 className="text-xl font-bold tracking-tight text-[var(--color-text)] text-editorial">
                   Lab 03: Flujo de Couette (Placas Paralelas)
                 </h3>
               </div>
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() =>
-                    window.dispatchEvent(
-                      new CustomEvent("fluidlab:assistant", {
-                        detail: { open: true, context: "couette" },
-                      }),
-                    )
-                  }
+                  onClick={() => openAssistant("couette")}
                   className="p-2 rounded-xl bg-white/5 border border-brand-border text-[var(--color-text)] hover:bg-white/10 transition-colors"
                   title="Abrir asistente (Lab 03)"
                   aria-label="Abrir asistente (Lab 03)"
@@ -1406,7 +1529,44 @@ export const VirtualLabs = () => {
               </div>
 
               <div className="lg:col-span-8 p-8 bg-white/5 flex items-center justify-center relative overflow-hidden">
+                <div className="scanline" />
                 <div className="absolute inset-0 bg-grid opacity-10"></div>
+                
+                {/* HUD Overlay */}
+                <div className="absolute top-4 right-4 z-50">
+                  <PhysicalHUD
+                    reynolds={(FLUID_PRESETS[cFluidIdx].rho * cParams.uTop * cParams.h) / FLUID_PRESETS[cFluidIdx].mu}
+                    velocity={cParams.uTop}
+                    pressure={FLUID_PRESETS[cFluidIdx].mu * (cParams.uTop / cParams.h)} // Shear Stress
+                    label="LAB 03"
+                  />
+                </div>
+
+                {/* Particle Background */}
+                <div className="absolute inset-0 pointer-events-none opacity-20">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute rounded-full bg-brand-accent/30 blur-[1px]"
+                      style={{
+                        width: Math.random() * 3 + 1 + "px",
+                        height: Math.random() * 3 + 1 + "px",
+                        left: Math.random() * 100 + "%",
+                        top: Math.random() * 100 + "%",
+                      }}
+                      animate={{
+                        x: [0, 100, 0],
+                        opacity: [0.2, 0.5, 0.2],
+                      }}
+                      transition={{
+                        duration: 3 + Math.random() * 4,
+                        repeat: Infinity,
+                        ease: "linear",
+                        delay: Math.random() * 5,
+                      }}
+                    />
+                  ))}
+                </div>
 
                 {/* -- Vista 3D -- */}
                 <div
@@ -1433,80 +1593,82 @@ export const VirtualLabs = () => {
 
                 {/* -- Vista 2D -- */}
                 <div
-                  className={`h-[350px] w-full max-w-md relative border-y-4 border-brand-border bg-[var(--glass-bg)] shadow-inner rounded-sm overflow-hidden ${couette3D ? "hidden" : ""}`}
+                  className={`h-[450px] w-full relative z-10 ${couette3D ? "hidden" : ""}`}
                 >
-                  {/* Fluid background */}
-                  <div
-                    className="absolute inset-0 transition-colors duration-500 opacity-20"
-                    style={{ backgroundColor: FLUID_PRESETS[cFluidIdx].hex }}
-                  ></div>
-
-                  {/* Moving Plate Indicator (Top) */}
-                  <motion.div
-                    animate={{ x: [-20, 20] }}
-                    transition={{
-                      duration: Math.max(0.2, 2 / cParams.uTop),
-                      repeat: Infinity,
-                      repeatType: "reverse",
-                      ease: "linear",
-                    }}
-                    className="absolute top-0 left-0 w-full h-2 z-20"
-                    style={{
-                      backgroundColor: FLUID_PRESETS[cFluidIdx].hex,
-                      boxShadow: `0 2px 10px ${FLUID_PRESETS[cFluidIdx].hex}44`,
-                    }}
+                  <div className="absolute top-0 left-0 text-[10px] font-mono text-slate-600 uppercase tracking-widest">
+                    Perfil de Velocidad (Couette)
+                  </div>
+                  <ResponsiveContainer
+                    width="100%"
+                    height="100%"
+                    key={`couette-${cParams.uTop}-${cParams.h}-${cFluidIdx}`}
                   >
-                    <div className="w-full h-full opacity-30 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,white_10px,white_20px)]"></div>
-                  </motion.div>
-
-                  {/* Velocity Vectors */}
-                  <div className="absolute inset-0 flex flex-col justify-between py-8 px-8">
-                    {[...couetteData].reverse().map((d, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <motion.div
-                          initial={false}
-                          animate={{
-                            width: `${(d.u / 5.0) * 100}%`, // Normalized by max velocity (5.0)
-                            opacity: 0.3 + (d.u / cParams.uTop) * 0.7,
-                          }}
-                          className="h-1 rounded-full relative min-w-[2px]"
-                          style={{
-                            backgroundColor: FLUID_PRESETS[cFluidIdx].hex,
-                          }}
-                        >
-                          {d.u > 0 && (
-                            <div
-                              className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-1.5 border-t-2 border-r-2 rotate-45"
-                              style={{
-                                borderColor: FLUID_PRESETS[cFluidIdx].hex,
-                              }}
-                            ></div>
-                          )}
-                        </motion.div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Shear Stress Visualization (Subtle gradient) */}
-                  <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: `linear-gradient(to bottom, ${FLUID_PRESETS[cFluidIdx].hex}11, transparent)`,
-                    }}
-                  ></div>
-
-                  <div
-                    className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest bg-white/80 px-2 py-1 rounded border z-10"
-                    style={{
-                      color: FLUID_PRESETS[cFluidIdx].hex,
-                      borderColor: `${FLUID_PRESETS[cFluidIdx].hex}33`,
-                    }}
-                  >
-                    Placa Móvil (U)
-                  </div>
-                  <div className="absolute bottom-4 right-4 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-widest glass-card px-2 py-1 rounded border border-brand-border z-10">
-                    Placa Fija
-                  </div>
+                    <AreaChart
+                      data={couetteData}
+                      layout="vertical"
+                      margin={{ top: 40, right: 40, left: 40, bottom: 40 }}
+                      className="oscilloscope-grid"
+                    >
+                      <defs>
+                        {FLUID_PRESETS.map((fluid, idx) => (
+                          <linearGradient
+                            key={idx}
+                            id={`colorCouette-${idx}`}
+                            x1="0"
+                            y1="0"
+                            x2="1"
+                            y2="0"
+                          >
+                            <stop
+                              offset="5%"
+                              stopColor={fluid.hex}
+                              stopOpacity={0.4}
+                            />
+                            <stop
+                              offset="95%"
+                              stopColor={fluid.hex}
+                              stopOpacity={0.1}
+                            />
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="0"
+                        stroke="rgba(45, 212, 191, 0.1)"
+                        vertical={true}
+                      />
+                      <XAxis type="number" domain={[0, "auto"]} hide />
+                      <YAxis dataKey="y" type="number" hide />
+                      <Tooltip
+                        content={({ active, payload }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div className="hud-panel p-3 rounded-xl border border-brand-accent/30">
+                                <p className="text-[10px] font-mono text-brand-accent uppercase tracking-widest mb-1">Lectura de Sensor</p>
+                                <p className="text-xs font-mono text-slate-200">
+                                  y: {Number(payload[0].payload.y).toFixed(3)} m
+                                </p>
+                                <p className="text-xs font-mono text-brand-accent font-bold">
+                                  u: {Number(payload[0].value).toFixed(4)} m/s
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="u"
+                        stroke={FLUID_PRESETS[cFluidIdx].hex}
+                        strokeWidth={3}
+                        fillOpacity={1}
+                        fill={`url(#colorCouette-${cFluidIdx})`}
+                        isAnimationActive={!reduceMotion}
+                        className="oscilloscope-glow"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
 
                 <div
@@ -1524,14 +1686,54 @@ export const VirtualLabs = () => {
       {/* AI Assistant Floating Bubble */}
       <AIAssistant
         input={{
-          labContext: "stokes",
+          labContext: activeLab,
+          // Poiseuille
+          radius: pParams.r,
+          mu: pParams.mu,
+          dp: pParams.dp,
+          l: pParams.l,
+          qValue,
+          // Stokes
+          rho_f: sParams.rho_f,
+          rho_p: sParams.rho_p,
           vt,
           rep,
-          qValue,
-          isNonNewtonian,
-          flowIndex,
+          // Couette
           uTop: cParams.uTop,
           h: cParams.h,
+          // Global
+          isNonNewtonian,
+          flowIndex,
+          temperature,
+        }}
+        onUpdateParams={(newParams) => {
+          if (activeLab === "poiseuille") {
+            setPParams((prev: any) => ({
+              ...prev,
+              r: newParams.radius ?? prev.r,
+              mu: newParams.mu ?? prev.mu,
+              dp: newParams.dp ?? prev.dp,
+              l: newParams.l ?? prev.l,
+            }));
+          } else if (activeLab === "stokes") {
+            setSParams((prev: any) => ({
+              ...prev,
+              r: newParams.radius ?? prev.r,
+              mu: newParams.mu ?? prev.mu,
+              rho_f: newParams.rho_f ?? prev.rho_f,
+              rho_p: newParams.rho_p ?? prev.rho_p,
+            }));
+          } else if (activeLab === "couette") {
+            setCParams((prev: any) => ({
+              ...prev,
+              uTop: newParams.uTop ?? prev.uTop,
+              h: newParams.h ?? prev.h,
+              mu: newParams.mu ?? prev.mu,
+            }));
+          }
+          if (newParams.temperature !== undefined) setTemperature(newParams.temperature);
+          if (newParams.isNonNewtonian !== undefined) setIsNonNewtonian(newParams.isNonNewtonian);
+          if (newParams.flowIndex !== undefined) setFlowIndex(newParams.flowIndex);
         }}
       />
     </div>
