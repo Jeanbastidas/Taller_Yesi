@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect, useContext, Suspense } from "react";
+import { useState, useMemo, useEffect, useContext, Suspense } from "react";
 import { UnitContext } from "../context/UnitContext";
 import { getConv, getUnits } from "../utils/units";
 import {
@@ -121,8 +121,8 @@ export const VirtualLabs = () => {
   const [comparisonData, setComparisonData] = useState<any[]>([]);
 
   // 3D View toggles
-  const [stokes3D, setStokes3D] = useState(false);
-  const [couette3D, setCouette3D] = useState(false);
+  const [stokes3D, setStokes3D] = useState(true);
+  const [couette3D, setCouette3D] = useState(true);
 
   // Selected Fluid Indices
   const [pFluidIdx, setPFluidIdx] = useState(0);
@@ -408,7 +408,7 @@ export const VirtualLabs = () => {
                 </span>
                 <button
                   onClick={() => setIsNonNewtonian(!isNonNewtonian)}
-                  className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${isNonNewtonian ? "bg-brand-accent text-black" : "bg-slate-700 text-slate-300"}`}
+                  className={`text-[10px] font-bold px-2 py-1 rounded transition-colors ${isNonNewtonian ? "bg-brand-accent text-brand-bg" : "bg-[var(--glass-bg)] text-[var(--color-text-muted)] border border-brand-border"}`}
                 >
                   {isNonNewtonian ? "NO-NEWTONIANO" : "NEWTONIANO"}
                 </button>
@@ -439,7 +439,7 @@ export const VirtualLabs = () => {
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="bg-brand-accent text-black text-[8px] px-2 py-0.5 rounded-full font-bold"
+                    className="bg-brand-accent text-brand-bg text-[8px] px-2 py-0.5 rounded-full font-bold"
                   >
                     LOGRADO!
                   </motion.div>
@@ -523,8 +523,8 @@ export const VirtualLabs = () => {
                         }}
                         className={`px-2 py-2 rounded-lg border text-[9px] font-bold transition-all ${
                           pFluidIdx === idx
-                            ? "bg-brand-accent border-brand-accent text-black"
-                            : "bg-white/5 border-brand-border text-slate-400 hover:border-brand-accent/50"
+                            ? "bg-brand-accent border-brand-accent text-brand-bg"
+                            : "bg-[var(--glass-bg)] border-brand-border text-[var(--color-text-muted)] hover:border-brand-accent/50"
                         }`}
                       >
                         {fluid.name}
@@ -820,8 +820,8 @@ export const VirtualLabs = () => {
                   onClick={() => setStokes3D((v) => !v)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                     stokes3D
-                      ? "bg-brand-accent border-brand-accent text-black"
-                      : "bg-white/5 border-brand-border text-slate-400 hover:border-brand-accent/40"
+                      ? "bg-brand-accent border-brand-accent text-brand-bg"
+                      : "bg-[var(--glass-bg)] border-brand-border text-[var(--color-text-muted)] hover:border-brand-accent/40"
                   }`}
                   title="Alternar Vista 3D"
                 >
@@ -857,8 +857,8 @@ export const VirtualLabs = () => {
                         }}
                         className={`px-2 py-2 rounded-lg border text-[9px] font-bold transition-all ${
                           sFluidIdx === idx
-                            ? "bg-brand-accent border-brand-accent text-black"
-                            : "bg-white/5 border-brand-border text-slate-400 hover:border-brand-accent/50"
+                            ? "bg-brand-accent border-brand-accent text-brand-bg"
+                            : "bg-[var(--glass-bg)] border-brand-border text-[var(--color-text-muted)] hover:border-brand-accent/50"
                         }`}
                       >
                         {fluid.name}
@@ -983,7 +983,7 @@ export const VirtualLabs = () => {
                   <button
                     onClick={() => setIsStokesRunning(true)}
                     disabled={isStokesRunning || stokesProgress >= 100}
-                    className="flex-1 py-3 bg-brand-accent text-black font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
+                    className="flex-1 py-3 bg-brand-accent text-brand-bg font-bold rounded-xl disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform"
                   >
                     <Play size={18} fill="currentColor" />
                     Iniciar
@@ -1294,8 +1294,8 @@ export const VirtualLabs = () => {
                   onClick={() => setCouette3D((v) => !v)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
                     couette3D
-                      ? "bg-brand-accent border-brand-accent text-black"
-                      : "bg-white/5 border-brand-border text-slate-400 hover:border-brand-accent/40"
+                      ? "bg-brand-accent border-brand-accent text-brand-bg"
+                      : "bg-[var(--glass-bg)] border-brand-border text-[var(--color-text-muted)] hover:border-brand-accent/40"
                   }`}
                 >
                   <Box size={14} />
@@ -1322,8 +1322,8 @@ export const VirtualLabs = () => {
                         onClick={() => setCFluidIdx(idx)}
                         className={`px-2 py-2 rounded-lg border text-[9px] font-bold transition-all ${
                           cFluidIdx === idx
-                            ? "bg-brand-accent border-brand-accent text-black"
-                            : "bg-white/5 border-brand-border text-slate-400 hover:border-brand-accent/50"
+                            ? "bg-brand-accent border-brand-accent text-brand-bg"
+                            : "bg-[var(--glass-bg)] border-brand-border text-[var(--color-text-muted)] hover:border-brand-accent/50"
                         }`}
                       >
                         {fluid.name}
