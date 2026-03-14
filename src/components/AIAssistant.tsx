@@ -23,6 +23,9 @@ import {
   Loader2,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
+import { GoogleGenAI } from "@google/genai";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { UnitContext, type UnitSystem } from "../context/UnitContext";
 import { getUnits } from "../utils/units";
 
@@ -115,8 +118,7 @@ interface LabConfig {
 
 interface PersistedState {
   open: boolean;
-  activeContext: LabContext;
-  chatByContext: Record<LabContext, ChatMsg[]>;
+  chat: ChatMsg[];
 }
 
 // ─────────────────────────────────────────────
@@ -1086,12 +1088,6 @@ function answerQuestionV2(
     return score[best] > 0 ? best : null;
   };
 
-  const hintedLab = inferLabFromQuestion();
-  const labMismatch =
-    hintedLab != null && hintedLab !== input.labContext
-      ? `Nota: tu pregunta parece de ${LAB_CONFIG[hintedLab].label}. Si quieres, cambia de lab o dime si respondo con ese contexto.\n`
-      : "";
-
   const guideFor = (ctx: LabContext) => {
     if (ctx === "poiseuille") {
       return [
@@ -1494,26 +1490,9 @@ function DeltaIcon({ trend, label }: { trend: DeltaTrend; label?: string }) {
 // ─────────────────────────────────────────────
 
 function SimpleMarkdown({ text }: { text: string }) {
-  const lines = text.split("\n");
   return (
-    <div className="text-[var(--color-text-soft)] leading-relaxed space-y-0.5">
-      {lines.map((line, i) => {
-        const key = `${i}:${line.slice(0, 20)}`;
-        const isBullet = line.trimStart().startsWith("•");
-        if (isBullet) {
-          return (
-            <div key={key} className="flex gap-1.5 items-start">
-              <span className="text-brand-accent mt-0.5 shrink-0">•</span>
-              <span>{line.replace(/^[\s•]+/, "")}</span>
-            </div>
-          );
-        }
-        return line ? (
-          <p key={key}>{line}</p>
-        ) : (
-          <div key={key} className="h-1" />
-        );
-      })}
+    <div className="text-[var(--color-text-soft)] leading-relaxed space-y-2 text-sm markdown-body">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
     </div>
   );
 }
@@ -1613,18 +1592,26 @@ function ChatWindow({ chat, isTyping }: ChatWindowProps) {
       {chat.map((m, i) => (
         <div
           key={`${m.role}-${m.timestamp}-${i}`}
-          className={`p-4 rounded-2xl border text-xs leading-relaxed assistant-bubble ${
-            m.role === "user" ? "assistant-bubble-user" : "assistant-bubble-ai"
+          className={`flex gap-3 ${
+            m.role === "user" ? "flex-row-reverse" : "flex-row"
           }`}
         >
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">
-            {m.role === "user" ? "Tú" : "Asistente"}
-          </p>
-          {m.role === "assistant" ? (
-            <SimpleMarkdown text={m.text} />
-          ) : (
-            <p className="text-[var(--color-text-soft)]">{m.text}</p>
-          )}
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+            m.role === "user" ? "bg-brand-secondary/20 text-brand-secondary" : "bg-brand-accent/20 text-brand-accent"
+          }`}>
+            {m.role === "user" ? <span className="text-xs font-bold">Tú</span> : <MessageCircle size={16} />}
+          </div>
+          <div
+            className={`p-4 rounded-2xl border text-sm leading-relaxed max-w-[85%] ${
+              m.role === "user" ? "assistant-bubble-user rounded-tr-sm" : "assistant-bubble-ai rounded-tl-sm"
+            }`}
+          >
+            {m.role === "assistant" ? (
+              <SimpleMarkdown text={m.text} />
+            ) : (
+              <p className="text-[var(--color-text-soft)]">{m.text}</p>
+            )}
+          </div>
         </div>
       ))}
 
@@ -1635,30 +1622,35 @@ function ChatWindow({ chat, isTyping }: ChatWindowProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.2 }}
-            className="p-4 rounded-2xl border border-brand-border bg-black/20 text-xs flex items-center gap-2 text-[var(--color-text-muted)] assistant-bubble assistant-bubble-ai"
+            className="flex gap-3 flex-row"
             role="status"
             aria-label={strings.typing}
           >
-            <div className="flex items-center gap-1">
-              <motion.div
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
-                className="w-1.5 h-1.5 bg-brand-accent rounded-full"
-              />
-              <motion.div
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
-                className="w-1.5 h-1.5 bg-brand-accent rounded-full"
-              />
-              <motion.div
-                animate={{ y: [0, -4, 0] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
-                className="w-1.5 h-1.5 bg-brand-accent rounded-full"
-              />
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-brand-accent/20 text-brand-accent">
+              <MessageCircle size={16} />
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest">
-              {strings.typing}
-            </span>
+            <div className="p-4 rounded-2xl border border-brand-border bg-black/20 text-xs flex items-center gap-2 text-[var(--color-text-muted)] assistant-bubble assistant-bubble-ai rounded-tl-sm">
+              <div className="flex items-center gap-1">
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                  className="w-1.5 h-1.5 bg-brand-accent rounded-full"
+                />
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                  className="w-1.5 h-1.5 bg-brand-accent rounded-full"
+                />
+                <motion.div
+                  animate={{ y: [0, -4, 0] }}
+                  transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                  className="w-1.5 h-1.5 bg-brand-accent rounded-full"
+                />
+              </div>
+              <span className="text-[10px] font-black uppercase tracking-widest">
+                {strings.typing}
+              </span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1711,23 +1703,10 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
   const strings = I18N.es;
 
   const [open, setOpen] = useState(false);
-  const [activeContext, setActiveContext] = useState<LabContext>(
-    input.labContext,
-  );
-  const [chatByContext, setChatByContext] = useState<
-    Record<LabContext, ChatMsg[]>
-  >({
-    poiseuille: [],
-    stokes: [],
-    couette: [],
-  });
+  const [chat, setChat] = useState<ChatMsg[]>([]);
   const [draft, setDraft] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [welcomeSent, setWelcomeSent] = useState<Record<LabContext, boolean>>({
-    poiseuille: false,
-    stokes: false,
-    couette: false,
-  });
+  const [welcomeSent, setWelcomeSent] = useState(false);
 
   // Delta tracking
   const prevInputRef = useRef<HeuristicInput>(input);
@@ -1737,8 +1716,8 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Refs for latest state
-  const chatByContextRef = useRef(chatByContext);
-  chatByContextRef.current = chatByContext;
+  const chatRef = useRef(chat);
+  chatRef.current = chat;
 
   // Persistence
   const storageReady = useRef(false);
@@ -1746,90 +1725,63 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
   useEffect(() => {
     const saved = loadState();
     if (saved.open != null) setOpen(saved.open);
-    if (saved.activeContext) setActiveContext(saved.activeContext);
-    if (saved.chatByContext) setChatByContext(saved.chatByContext);
+    if (saved.chat) setChat(saved.chat);
     storageReady.current = true;
   }, []);
 
   useEffect(() => {
     if (!storageReady.current) return;
-    saveState({ open, activeContext, chatByContext });
-  }, [open, activeContext, chatByContext]);
+    saveState({ open, chat });
+  }, [open, chat]);
 
   // Delta tracking
   useEffect(() => {
-    if (input.labContext !== activeContext) return;
     const timer = setTimeout(() => {
       setPrevInput(prevInputRef.current);
       prevInputRef.current = input;
     }, 400);
     return () => clearTimeout(timer);
-  }, [input, activeContext]);
-
-  // Auto-switch context when closed
-  useEffect(() => {
-    if (!open) {
-      setActiveContext(input.labContext);
-    }
-  }, [input.labContext, open]);
+  }, [input]);
 
   // Welcome message
   useEffect(() => {
     if (!open) return;
 
-    const currentChat = chatByContext[activeContext] || [];
-    if (currentChat.length === 0 && !welcomeSent[activeContext]) {
+    if (chat.length === 0 && !welcomeSent) {
       const welcomeMsg: ChatMsg = {
         role: "assistant",
-        text: getWelcomeMessage(activeContext),
+        text: "Hola, soy tu asistente de FluidLab. ¿En qué te puedo ayudar hoy?",
         timestamp: Date.now(),
       };
 
-      setChatByContext((prev) => ({
-        ...prev,
-        [activeContext]: [welcomeMsg],
-      }));
-
-      setWelcomeSent((prev) => ({
-        ...prev,
-        [activeContext]: true,
-      }));
+      setChat([welcomeMsg]);
+      setWelcomeSent(true);
     }
-  }, [open, activeContext, chatByContext, welcomeSent]);
+  }, [open, chat, welcomeSent]);
 
   const derived = useMemo(
-    () => ({ ...input, labContext: activeContext }),
-    [input, activeContext],
+    () => ({ ...input }),
+    [input],
   );
-
-  const contextMismatch = input.labContext !== activeContext;
 
   const analysis = useMemo(
     () => analysisFor(derived, unitSystem, prevInput),
     [derived, unitSystem, prevInput],
   );
 
-  const cfg = LAB_CONFIG[activeContext];
-  const chat = chatByContext[activeContext] ?? [];
+  const cfg = LAB_CONFIG[input.labContext];
 
   // Unread count
-  const readCountRef = useRef<Record<LabContext, number>>({
-    poiseuille: 0,
-    stokes: 0,
-    couette: 0,
-  });
+  const readCountRef = useRef<number>(0);
 
   useEffect(() => {
     if (open) {
-      readCountRef.current = {
-        ...readCountRef.current,
-        [activeContext]: chat.length,
-      };
+      readCountRef.current = chat.length;
     }
-  }, [open, activeContext, chat.length]);
+  }, [open, chat.length]);
 
   const unreadCount = !open
-    ? Math.max(0, chat.length - (readCountRef.current[activeContext] ?? 0))
+    ? Math.max(0, chat.length - readCountRef.current)
     : 0;
 
   // Auto-scroll
@@ -1841,7 +1793,7 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
         behavior: "smooth",
       });
     });
-  }, [open, chat, activeContext]);
+  }, [open, chat]);
 
   // Focus input when opening
   useEffect(() => {
@@ -1857,50 +1809,72 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
       const userMsg: ChatMsg = { role: "user", text: q, timestamp: Date.now() };
 
       const historyWithUser = [
-        ...(chatByContextRef.current[activeContext] ?? []),
+        ...chatRef.current,
         userMsg,
       ];
 
-      setChatByContext((prev) => ({
-        ...prev,
-        [activeContext]: historyWithUser,
-      }));
+      setChat(historyWithUser);
       setDraft("");
       setIsTyping(true);
 
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
-          const reply = answerQuestionV2(
-            q,
-            derived,
-            unitSystem,
-            historyWithUser,
-          );
+          let reply = "";
+          try {
+            const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+            const systemInstruction = `Eres un asistente experto en mecánica de fluidos para la aplicación FluidLab.
+El usuario está actualmente en el laboratorio: ${input.labContext}.
+Los parámetros actuales del laboratorio son: ${JSON.stringify(derived)}.
+Sistema de unidades actual: ${unitSystem}.
+Responde de manera concisa, educativa y directamente relacionada con la mecánica de fluidos.
+Si el usuario hace una pregunta general, responde basándote en los principios de la física.
+Si la pregunta es sobre los parámetros actuales, usa los valores proporcionados.`;
+
+            // Format history for context (last 5 messages to save tokens)
+            const recentHistory = historyWithUser.slice(-5).map(m => `${m.role === 'user' ? 'Usuario' : 'Asistente'}: ${m.text}`).join('\n');
+            const prompt = `Historial reciente:\n${recentHistory}\n\nPregunta actual del usuario: ${q}`;
+
+            const response = await ai.models.generateContent({
+              model: "gemini-3.1-pro-preview",
+              contents: prompt,
+              config: {
+                systemInstruction,
+              }
+            });
+            reply = response.text || "";
+          } catch (apiError) {
+            console.error("Gemini API Error, falling back to local NLP:", apiError);
+            reply = answerQuestionV2(
+              q,
+              derived,
+              unitSystem,
+              historyWithUser,
+            );
+          }
+
+          if (!reply) {
+             reply = answerQuestionV2(q, derived, unitSystem, historyWithUser);
+          }
+
           const assistantMsg: ChatMsg = {
             role: "assistant",
             text: reply,
             timestamp: Date.now(),
           };
-          setChatByContext((prev) => ({
-            ...prev,
-            [activeContext]: [...(prev[activeContext] ?? []), assistantMsg],
-          }));
+          setChat((prev) => [...prev, assistantMsg]);
         } catch {
           const errorMsg: ChatMsg = {
             role: "assistant",
             text: strings.errorProcessing,
             timestamp: Date.now(),
           };
-          setChatByContext((prev) => ({
-            ...prev,
-            [activeContext]: [...(prev[activeContext] ?? []), errorMsg],
-          }));
+          setChat((prev) => [...prev, errorMsg]);
         } finally {
           setIsTyping(false);
         }
       }, 0);
     },
-    [activeContext, derived, unitSystem, isTyping, strings.errorProcessing],
+    [input.labContext, derived, unitSystem, isTyping, strings.errorProcessing],
   );
 
   // External event bus
@@ -1908,12 +1882,9 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
     const handler = (ev: Event) => {
       const ce = ev as CustomEvent<{
         open?: boolean;
-        context?: LabContext;
         prompt?: string;
       }>;
       const detail = ce.detail ?? {};
-      if (detail.context && detail.context in LAB_CONFIG)
-        setActiveContext(detail.context);
       if (detail.open) setOpen(true);
       if (typeof detail.prompt === "string" && detail.prompt.trim())
         setTimeout(() => send(detail.prompt as string), 0);
@@ -1927,8 +1898,8 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
   }, [send]);
 
   const clearChat = () => {
-    setChatByContext((prev) => ({ ...prev, [activeContext]: [] }));
-    setWelcomeSent((prev) => ({ ...prev, [activeContext]: false }));
+    setChat([]);
+    setWelcomeSent(false);
   };
 
   return (
@@ -1951,7 +1922,7 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
-                  className="w-9 h-9 rounded-2xl bg-gradient-to-br from-brand-accent to-brand-secondary flex items-center justify-center text-white shadow-lg assistant-avatar"
+                  className="w-9 h-9 rounded-2xl bg-gradient-to-br from-brand-accent to-brand-secondary flex items-center justify-center text-brand-bg shadow-lg assistant-avatar"
                   aria-hidden="true"
                 >
                   <MessageCircle size={16} />
@@ -1961,12 +1932,6 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
                     {strings.title}
                   </p>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full border text-[10px] font-black tracking-widest assistant-chip ${cfg.pill}`}
-                    >
-                      {cfg.icon} {cfg.label}
-                    </span>
-
                     <button
                       onClick={clearChat}
                       disabled={chat.length === 0}
@@ -1989,47 +1954,8 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
               </button>
             </div>
 
-            {/* Lab switcher + Quick prompts */}
+            {/* Quick prompts */}
             <div className="px-5 pt-4 space-y-3">
-              <div
-                className="grid grid-cols-3 gap-2"
-                role="tablist"
-                aria-label="Seleccionar laboratorio"
-              >
-                {(Object.keys(LAB_CONFIG) as LabContext[]).map((ctx) => (
-                  <button
-                    key={ctx}
-                    onClick={() => setActiveContext(ctx)}
-                    role="tab"
-                    aria-selected={activeContext === ctx}
-                    className={`px-3 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-colors assistant-tab ${
-                      activeContext === ctx
-                        ? "assistant-tab-active"
-                        : "assistant-tab-idle"
-                    }`}
-                  >
-                    {LAB_CONFIG[ctx].shortLabel}
-                  </button>
-                ))}
-              </div>
-
-              {contextMismatch && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-400 font-bold"
-                >
-                  <TriangleAlert size={12} />
-                  {strings.contextMismatch
-                    .replace("{active}", LAB_CONFIG[activeContext].shortLabel)
-                    .replace(
-                      "{input}",
-                      LAB_CONFIG[input.labContext].shortLabel,
-                    )}
-                </motion.div>
-              )}
-
               <QuickPrompts
                 prompts={cfg.quickPrompts}
                 onSelect={send}
@@ -2071,7 +1997,7 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
                 <button
                   type="submit"
                   disabled={!draft.trim() || isTyping}
-                  className="px-4 py-3 rounded-2xl bg-brand-accent text-black font-black border border-black/10 hover:scale-[1.02] transition-transform disabled:opacity-40 disabled:scale-100 assistant-send"
+                  className="px-4 py-3 rounded-2xl bg-brand-accent text-brand-bg font-black border border-black/10 hover:scale-[1.02] transition-transform disabled:opacity-40 disabled:scale-100 assistant-send"
                   title="Enviar pregunta"
                   aria-label="Enviar pregunta"
                 >
@@ -2099,7 +2025,7 @@ export const AIAssistant = ({ input }: AIAssistantProps) => {
         onClick={() => setOpen((v) => !v)}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.96 }}
-        className="w-14 h-14 rounded-2xl bg-brand-accent text-black flex items-center justify-center shadow-2xl shadow-brand-accent/30 relative border border-black/10 assistant-fab"
+        className="w-14 h-14 rounded-2xl bg-brand-accent text-brand-bg flex items-center justify-center shadow-2xl shadow-brand-accent/30 relative border border-black/10 assistant-fab"
         title={open ? strings.close : strings.open}
         aria-label={open ? strings.close : strings.open}
         aria-expanded={open}
